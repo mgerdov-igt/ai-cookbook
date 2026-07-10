@@ -1,4 +1,4 @@
-# AI Cookbook for Software Engineers
+# No-nonsense AI Cookbook for Busy Software Engineers
 
 Practical, short guides for using AI tools in daily software work on Windows 11 with PowerShell 7+.
 
@@ -7,6 +7,20 @@ This repo is intentionally small:
 - Basic commands
 - Practical examples
 - Clear links between docs
+
+Use each top-level page for one specific purpose:
+- [Quickstart](./QUICKSTART.md): decide where to begin
+- [10-minute onboarding](./10-MINUTE-ONBOARDING.md): install, login, verify, and run one useful task
+- [Tool selection cheat sheet](./TOOL-SELECTION.md): choose the right tool quickly
+- [Fastest path by role](./FASTEST-PATH-BY-ROLE.md): start from backend, frontend, or platform work
+
+## What "No-nonsense" means here
+
+- Fast path first
+- Copy-paste commands
+- Practical examples over theory
+- Minimal duplication
+- Stop before this turns into vendor documentation
 
 ## Audience
 
@@ -19,15 +33,27 @@ Software engineers who want to get productive quickly with:
 ## Start Here
 
 1. [Quickstart](./QUICKSTART.md)
-2. [Prerequisite tools](./PREREQUISITES-TOOLS.md)
-3. [PowerShell environment setup](./powershell/SETUP.md)
-4. [GSD setup](./gsd/SETUP.md)
-5. [Copilot CLI setup](./copilot-cli/SETUP.md)
-6. [Claude Code setup](./claude-code/SETUP.md)
+2. [Tool selection cheat sheet](./TOOL-SELECTION.md)
+3. [Fastest path by role](./FASTEST-PATH-BY-ROLE.md)
+4. [10-minute onboarding](./10-MINUTE-ONBOARDING.md)
+
+If you already know what you need:
+- [Prerequisite tools](./PREREQUISITES-TOOLS.md)
+- [PowerShell environment setup](./powershell/SETUP.md)
+- [GSD setup](./gsd/SETUP.md)
+- [Copilot CLI setup](./copilot-cli/SETUP.md)
+- [Claude Code setup](./claude-code/SETUP.md)
 
 ## Structure
 
 - [Prerequisite tools](./PREREQUISITES-TOOLS.md)
+- [Tool selection cheat sheet](./TOOL-SELECTION.md)
+- [Task-to-tool matrix](./TASK-TOOL-MATRIX.md)
+- [Fastest path by role](./FASTEST-PATH-BY-ROLE.md)
+- [10-minute onboarding](./10-MINUTE-ONBOARDING.md)
+- [Failure recovery](./FAILURE-RECOVERY.md)
+- [Prompt templates](./PROMPT-TEMPLATES.md)
+- [Session management patterns](./SESSION-MANAGEMENT.md)
 - [Common best practices](./COMMON-BEST-PRACTICES.md)
 - [PowerShell bootstrap](./powershell/BOOTSTRAP.md)
 - [PowerShell docs](./powershell/BASICS.md)
@@ -59,5 +85,7 @@ In scope:
 Out of scope:
 - Full product references
 - Deep internal architecture docs for each external tool
+- Broad AI news or opinion coverage
+- Generic prompt collections with no engineering workflow context
 
 Use official tool docs for exhaustive details.
