@@ -54,6 +54,7 @@ If you already know what you need:
 - [Failure recovery](./FAILURE-RECOVERY.md)
 - [Prompt templates](./PROMPT-TEMPLATES.md)
 - [Session management patterns](./SESSION-MANAGEMENT.md)
+- [Skills and scripts guide](./skills/README.md)
 - [Common best practices](./COMMON-BEST-PRACTICES.md)
 - [PowerShell bootstrap](./powershell/BOOTSTRAP.md)
 - [PowerShell docs](./powershell/BASICS.md)
@@ -74,6 +75,15 @@ If you already know what you need:
 - [Claude Code cost control](./claude-code/COST-CONTROL.md)
 - [Docs roadmap](./ROADMAP.md)
 - [Agent instructions](./AGENTS.md)
+
+Skill examples:
+- [Copilot quota forecast skill example](./skills/copilot-quota-forecast/SKILL.md)
+- [Windows screenshot skill example](./skills/windows-screenshot/SKILL.md)
+- [Android screenshot skill example](./skills/android-screenshot/SKILL.md)
+
+Screenshot routing note:
+- Use [skills/windows-screenshot/SKILL.md](./skills/windows-screenshot/SKILL.md) for native Windows app windows.
+- Use browser screenshot tooling for browser-harness pages instead of this Windows skill.
 
 ## Scope and Non-goals
 

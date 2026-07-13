@@ -37,3 +37,11 @@ Use these next:
 - [Fastest path by role](./FASTEST-PATH-BY-ROLE.md)
 - [10-minute onboarding](./10-MINUTE-ONBOARDING.md)
 - [Failure recovery](./FAILURE-RECOVERY.md)
+
+## 6) Save tokens on repetitive tasks
+
+If you keep repeating the same prompts, move that workflow into a skill + script pair:
+- [Skills and scripts guide](./skills/README.md)
+- [Copilot quota forecast example skill](./skills/copilot-quota-forecast/SKILL.md)
+- [Windows screenshot example skill](./skills/windows-screenshot/SKILL.md)
+- [Android screenshot example skill](./skills/android-screenshot/SKILL.md)

@@ -29,6 +29,24 @@ If you are unsure:
 2. Use Claude Code if the task is ambiguous, risky, or debugging-heavy.
 3. Use GSD Pi if the work is large, cross-cutting, or needs staged delegation.
 
+## Model selection quick picks
+
+Use a fast/default model when:
+- The task is clear and bounded
+- You are editing one or a few files
+- You mainly need speed for implement-and-verify loops
+
+Use a strong reasoning model when:
+- Root cause is unknown
+- You need architecture trade-off analysis
+- The change is high risk (production paths, concurrency, state handling)
+
+Escalation rule:
+- If the first pass is shallow, misses constraints, or loops without progress, move up one model tier.
+
+De-escalation rule:
+- Once plan and constraints are stable, move back to a fast/default model for implementation passes.
+
 ## By work style
 
 Choose Copilot CLI if you prefer:

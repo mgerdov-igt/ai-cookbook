@@ -10,6 +10,7 @@ Topics worth covering next.
 - [Common failure patterns and fastest recovery](./FAILURE-RECOVERY.md)
 - [Prompt templates library](./PROMPT-TEMPLATES.md)
 - [Session management patterns](./SESSION-MANAGEMENT.md)
+- [Token-saving automation with skills and scripts](./skills/README.md)
 
 ## Still worth adding
 
@@ -28,3 +29,4 @@ Useful for restricted environments:
 - TLS inspection/corporate certificates
 - Firewall allowlists
 - Browser auth issues on managed machines
+

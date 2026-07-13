@@ -72,6 +72,23 @@ npm install -g @opengsd/gsd-pi@latest
 
 If uninstall/install reports permission errors, run PowerShell as Administrator.
 
+## Upgrade gotcha (new version just released)
+
+Sometimes `gsd upgrade` can fail shortly after a new GSD version is published.
+
+Manual fallback:
+
+```powershell
+npm uninstall -g @opengsd/gsd-pi
+npm install -g @opengsd/gsd-pi@latest
+```
+
+Then verify:
+
+```powershell
+gsd --version
+```
+
 ## Next
 
 - [10-minute onboarding](../10-MINUTE-ONBOARDING.md)
