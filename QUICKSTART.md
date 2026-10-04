@@ -37,6 +37,7 @@ Use these next:
 - [Fastest path by role](./FASTEST-PATH-BY-ROLE.md)
 - [10-minute onboarding](./10-MINUTE-ONBOARDING.md)
 - [Failure recovery](./FAILURE-RECOVERY.md)
+- [No-nonsense AI Software Engineering course](./courses/ai-software-engineering/README.md) for a free, self-paced, project-based learning path
 
 ## 6) Save tokens on repetitive tasks
 

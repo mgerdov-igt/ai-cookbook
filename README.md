@@ -54,6 +54,7 @@ If you already know what you need:
 - [Failure recovery](./FAILURE-RECOVERY.md)
 - [Prompt templates](./PROMPT-TEMPLATES.md)
 - [Session management patterns](./SESSION-MANAGEMENT.md)
+- [No-nonsense AI Software Engineering course](./courses/ai-software-engineering/README.md): free, self-paced course for experienced engineers
 - [Skills and scripts guide](./skills/README.md)
 - [Common best practices](./COMMON-BEST-PRACTICES.md)
 - [PowerShell bootstrap](./powershell/BOOTSTRAP.md)
