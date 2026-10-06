@@ -31,6 +31,8 @@ bash "<skill-folder>/scripts/pr-ready.sh" <PR-number>
 
 Replace `<skill-folder>` with this skill's installed folder. Review a script before running it. `pr-reply.sh` posts a GitHub comment, `pr-resolve.sh` resolves review threads, and `pr-cleanup.sh` removes a worktree and local branch; use those only at the matching step in the guides. Cleanup is optional and must not delete unmerged work.
 
+Poll for new Copilot review threads while CI is still running, not only after it finishes. When review fixes require a push, cancel only the superseded PR CI runs and push without waiting for their results. Confirm replacement CI starts for the new head and resume polling immediately. Follow the scoped cancellation and readiness steps in [Merge readiness](references/MERGE-READINESS.md).
+
 Never approve your own PR. Do not use an admin merge or skip a required approval unless the user explicitly authorizes it and the repository permits it.
 
 ## References
