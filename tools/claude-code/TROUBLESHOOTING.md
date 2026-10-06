@@ -1,5 +1,20 @@
 # Claude Code Troubleshooting
 
+## Installation needs administrator access
+
+If the installer reports that elevation is required, check your Windows account and current PowerShell session:
+
+```powershell
+$identity = [Security.Principal.WindowsIdentity]::GetCurrent()
+$principal = [Security.Principal.WindowsPrincipal]::new($identity)
+[pscustomobject]@{
+	LocalAdministrator = $identity.Groups.Value -contains 'S-1-5-32-544'
+	ElevatedSession = $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+}
+```
+
+If `LocalAdministrator` is `True` but `ElevatedSession` is `False`, reopen PowerShell with **Run as administrator** for that installation step only. If `LocalAdministrator` is `False`, ask IT or a local administrator to perform the step. Normal tool use does not need elevation.
+
 ## `claude` not found
 
 Check:
