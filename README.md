@@ -1,102 +1,22 @@
 # No-nonsense AI Cookbook for Busy Software Engineers
 
-Practical, short guides for using AI tools in daily software work on Windows 11 with PowerShell 7+.
-
-This repo is intentionally small:
-- Quick setup
-- Basic commands
-- Practical examples
-- Clear links between docs
-
-Use each top-level page for one specific purpose:
-- [Quickstart](./QUICKSTART.md): decide where to begin
-- [10-minute onboarding](./10-MINUTE-ONBOARDING.md): install, login, verify, and run one useful task
-- [Tool selection cheat sheet](./TOOL-SELECTION.md): choose the right tool quickly
-- [Fastest path by role](./FASTEST-PATH-BY-ROLE.md): start from backend, frontend, or platform work
-
-## What "No-nonsense" means here
-
-- Fast path first
-- Copy-paste commands
-- Practical examples over theory
-- Minimal duplication
-- Stop before this turns into vendor documentation
-
-## Audience
-
-Software engineers who want to get productive quickly with:
-- PowerShell 7+
-- GSD Pi
-- GitHub Copilot CLI
-- Claude Code
+Practical, concise guidance for engineers who build software with AI tools. Start guides stay at the project root. Tool guides are in [`tools/`](./tools/README.md); shared advice and work methods are in [`knowledge/`](./knowledge/README.md).
 
 ## Start Here
 
-1. [Quickstart](./QUICKSTART.md)
-2. [Tool selection cheat sheet](./TOOL-SELECTION.md)
-3. [Fastest path by role](./FASTEST-PATH-BY-ROLE.md)
-4. [10-minute onboarding](./10-MINUTE-ONBOARDING.md)
+Start with [QUICKSTART.md](./QUICKSTART.md). It helps you choose a tool and points to the next steps.
 
-If you already know what you need:
-- [Prerequisite tools](./PREREQUISITES-TOOLS.md)
-- [PowerShell environment setup](./powershell/SETUP.md)
-- [GSD setup](./gsd/SETUP.md)
-- [Copilot CLI setup](./copilot-cli/SETUP.md)
-- [Claude Code setup](./claude-code/SETUP.md)
+Then use:
+- [AI tools](./tools/README.md): setup, commands, examples, and fixes
+- [Shared guidance](./knowledge/README.md): good practices, prompts, and team workflows
+- [Skills](./skills/README.md): reusable instructions and scripts for compatible AI tools
+- [Courses](./courses/README.md): self-paced learning for software engineers
 
-## Structure
+## More Start Guides
 
-- [Prerequisite tools](./PREREQUISITES-TOOLS.md)
-- [Tool selection cheat sheet](./TOOL-SELECTION.md)
-- [Task-to-tool matrix](./TASK-TOOL-MATRIX.md)
-- [Fastest path by role](./FASTEST-PATH-BY-ROLE.md)
-- [10-minute onboarding](./10-MINUTE-ONBOARDING.md)
-- [Failure recovery](./FAILURE-RECOVERY.md)
-- [Prompt templates](./PROMPT-TEMPLATES.md)
-- [Session management patterns](./SESSION-MANAGEMENT.md)
-- [No-nonsense AI Software Engineering course](./courses/ai-software-engineering/README.md): free, self-paced course for experienced engineers
-- [Skills and scripts guide](./skills/README.md)
-- [Common best practices](./COMMON-BEST-PRACTICES.md)
-- [PowerShell bootstrap](./powershell/BOOTSTRAP.md)
-- [PowerShell docs](./powershell/BASICS.md)
-- [GSD overview](./gsd/OVERVIEW.md)
-- [GSD commands](./gsd/COMMANDS.md)
-- [GSD examples](./gsd/EXAMPLES.md)
-- [GSD troubleshooting](./gsd/TROUBLESHOOTING.md)
-- [GSD cost control](./gsd/COST-CONTROL.md)
-- [Copilot CLI overview](./copilot-cli/OVERVIEW.md)
-- [Copilot CLI commands](./copilot-cli/COMMANDS.md)
-- [Copilot CLI examples](./copilot-cli/EXAMPLES.md)
-- [Copilot CLI troubleshooting](./copilot-cli/TROUBLESHOOTING.md)
-- [Copilot CLI cost control](./copilot-cli/COST-CONTROL.md)
-- [Claude Code overview](./claude-code/OVERVIEW.md)
-- [Claude Code commands](./claude-code/COMMANDS.md)
-- [Claude Code examples](./claude-code/EXAMPLES.md)
-- [Claude Code troubleshooting](./claude-code/TROUBLESHOOTING.md)
-- [Claude Code cost control](./claude-code/COST-CONTROL.md)
-- [Docs roadmap](./ROADMAP.md)
-- [Agent instructions](./AGENTS.md)
+- [10-minute onboarding](./10-MINUTE-ONBOARDING.md): a guided setup after you choose a tool
+- [Fastest path by role](./FASTEST-PATH-BY-ROLE.md): short tool recommendations by job role
 
-Skill examples:
-- [Copilot quota forecast skill example](./skills/copilot-quota-forecast/SKILL.md)
-- [Windows screenshot skill example](./skills/windows-screenshot/SKILL.md)
-- [Android screenshot skill example](./skills/android-screenshot/SKILL.md)
+## Scope
 
-Screenshot routing note:
-- Use [skills/windows-screenshot/SKILL.md](./skills/windows-screenshot/SKILL.md) for native Windows app windows.
-- Use browser screenshot tooling for browser-harness pages instead of this Windows skill.
-
-## Scope and Non-goals
-
-In scope:
-- Getting started fast
-- Practical workflows
-- Step-by-step examples
-
-Out of scope:
-- Full product references
-- Deep internal architecture docs for each external tool
-- Broad AI news or opinion coverage
-- Generic prompt collections with no engineering workflow context
-
-Use official tool docs for exhaustive details.
+This cookbook favors short steps, useful examples, and links to official docs. It does not replace vendor docs or require every team to use the same process.

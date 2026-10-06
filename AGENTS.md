@@ -8,6 +8,8 @@ This repo is a concise documentation cookbook for Windows 11 + PowerShell 7+ usa
 - GSD Pi
 - GitHub Copilot CLI
 - Claude Code
+- Codex CLI and OpenCode
+- GLM-5.3 through an approved provider, when available
 
 Prioritize clarity and speed to first success.
 
@@ -25,9 +27,19 @@ Prioritize clarity and speed to first success.
 - Do not turn pages into full vendor documentation.
 - Link out to official docs for advanced topics.
 
+## Knowledge structure
+
+- Keep this file as stable steering and routing, not a status log or procedure catalog.
+- Put reusable procedures and examples in maintained topic pages.
+- Treat ignored `.todo/` content as temporary notes; move lasting decisions into project docs. See [knowledge structure](./knowledge/KNOWLEDGE-STRUCTURE.md).
+
 ## Authoring conventions
 
 - Markdown only.
+- Use plain, concise language. Write short sentences and say who does what.
+- Prefer common words over internal jargon. Explain a technical term the first time it matters.
+- Keep official product names, commands, code, and required engineering terms exact.
+- Remove filler, repeated setup, and claims that do not help the reader act.
 - Prefer sections in this order: Prerequisites, Install, Verify, First Run, Troubleshooting.
 - Use Windows PowerShell command examples by default.
 - Keep command snippets minimal and runnable.
@@ -39,9 +51,12 @@ Prioritize clarity and speed to first success.
 ## Required cross-linking
 
 When adding or changing pages:
-- Ensure [README](./README.md) links to the page.
-- Ensure [QUICKSTART](./QUICKSTART.md) still reflects the fastest path.
-- Ensure [PREREQUISITES-TOOLS](./PREREQUISITES-TOOLS.md) is referenced by setup pages.
+- Ensure [README](./README.md) routes readers to the relevant maintained guide.
+- Ensure [tools/README](./tools/README.md) indexes tool documentation.
+- Keep [QUICKSTART](./QUICKSTART.md), [10-minute onboarding](./10-MINUTE-ONBOARDING.md), and [fastest path by role](./FASTEST-PATH-BY-ROLE.md) at the project root.
+- Ensure [tools/PREREQUISITES-TOOLS](./tools/PREREQUISITES-TOOLS.md) is referenced by setup pages.
+- Ensure [knowledge/README](./knowledge/README.md) lists shared advice and work guides.
+- Ensure [skills/README](./skills/README.md) explains the shared Agent Skills format and global installation.
 - Add links between setup, commands, and examples for the same tool.
 
 ## External references

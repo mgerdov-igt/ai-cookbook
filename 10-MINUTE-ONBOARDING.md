@@ -2,23 +2,29 @@
 
 Use this when you want the shortest path to first success.
 
-This page is intentionally operational.
+Follow these steps in order.
 If you are still deciding which tool to use, go to [Quickstart](./QUICKSTART.md) first.
 
 ## 1) Prepare the machine
 
-1. Install the tools in [Prerequisite tools](./PREREQUISITES-TOOLS.md).
-2. Apply [PowerShell environment setup](./powershell/SETUP.md).
+1. Install the tools in [Prerequisite tools](tools/PREREQUISITES-TOOLS.md).
+2. Apply [PowerShell environment setup](tools/powershell/SETUP.md).
 3. Open a new PowerShell 7 session.
+
+Using WSL? Follow [WSL2 setup](tools/wsl/SETUP.md) and install tools inside Linux instead.
 
 ## 2) Install one AI tool
 
-Pick one setup page:
-- [GSD setup](./gsd/SETUP.md)
-- [Copilot CLI setup](./copilot-cli/SETUP.md)
-- [Claude Code setup](./claude-code/SETUP.md)
+For most work, start with Copilot CLI. Choose Claude Code when you need deeper debugging or more careful review:
+- [Copilot CLI setup](tools/copilot-cli/SETUP.md)
+- [Claude Code setup](tools/claude-code/SETUP.md)
 
-Do not install all three first unless you know you need them.
+Install one tool first. Add another only when a task needs it.
+
+Other options for specific needs:
+- [GSD Pi](tools/gsd-pi/SETUP.md) for large, staged work
+- [OpenCode](tools/opencode/SETUP.md) when you need multiple model providers or an approved GLM-5.3 provider
+- [Codex CLI](tools/codex/SETUP.md) for implementation followed by a separate review
 
 ## 3) Login
 
@@ -54,9 +60,9 @@ claude --version
 ## 5) Run one useful task
 
 Pick one:
-- [GSD examples](./gsd/EXAMPLES.md)
-- [Copilot CLI examples](./copilot-cli/EXAMPLES.md)
-- [Claude Code examples](./claude-code/EXAMPLES.md)
+- [GSD examples](tools/gsd-pi/EXAMPLES.md)
+- [Copilot CLI examples](tools/copilot-cli/EXAMPLES.md)
+- [Claude Code examples](tools/claude-code/EXAMPLES.md)
 
 ## 6) Verify the result
 
@@ -71,25 +77,25 @@ If you only want the minimum sequence for one tool, use one of these and skip th
 
 ### GSD Pi fast path
 
-1. Follow [GSD setup](./gsd/SETUP.md)
+1. Follow [GSD setup](tools/gsd-pi/SETUP.md)
 2. Run `gsd --version`
-3. Open [GSD examples](./gsd/EXAMPLES.md)
+3. Open [GSD examples](tools/gsd-pi/EXAMPLES.md)
 4. Start with the smallest practical example
 
 ### Copilot CLI fast path
 
-1. Follow [Copilot CLI setup](./copilot-cli/SETUP.md)
+1. Follow [Copilot CLI setup](tools/copilot-cli/SETUP.md)
 2. Run `copilot --version`
-3. Open [Copilot CLI examples](./copilot-cli/EXAMPLES.md)
+3. Open [Copilot CLI examples](tools/copilot-cli/EXAMPLES.md)
 4. Start with a focused repo task
 
 ### Claude Code fast path
 
-1. Follow [Claude Code setup](./claude-code/SETUP.md)
+1. Follow [Claude Code setup](tools/claude-code/SETUP.md)
 2. Run `claude --version`
-3. Open [Claude Code examples](./claude-code/EXAMPLES.md)
+3. Open [Claude Code examples](tools/claude-code/EXAMPLES.md)
 4. Start with a small debugging or implementation task
 
 ## If something breaks
 
-Go to [Failure recovery](./FAILURE-RECOVERY.md).
+Go to [Failure recovery](knowledge/FAILURE-RECOVERY.md).

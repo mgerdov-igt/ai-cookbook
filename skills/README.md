@@ -1,55 +1,81 @@
-# Skills and Scripts for Token-Saving Automation
+# Tool-Neutral Skills and Scripts
 
-Use skills when a task is repetitive, has stable inputs, and needs a predictable output.
+Use a skill when you repeat a task, use known inputs, and want the same kind of result each time.
+
+## Portable Skill Format
+
+Each skill is a folder with a `SKILL.md` file. The open [Agent Skills format](https://agentskills.io/) uses `name` and `description` in YAML frontmatter, followed by Markdown instructions. Compatible AI tools can use the same folder.
+
+Keep `SKILL.md` focused on the task, not one AI tool. Avoid tool-specific slash commands and frontmatter fields in the shared instructions. A skill can include scripts and reference files, but list their required programs and operating systems. The instructions should tell the AI tool what to do; scripts should do repeatable work.
+
+## Install for Personal Use
+
+Copy the whole skill folder to the personal skills folder used by your AI tool. The path varies by tool. For example:
+
+- Claude Code: `~/.claude/skills/<skill-name>/`
+- OpenCode: `~/.config/opencode/skills/<skill-name>/` or `~/.agents/skills/<skill-name>/`
+
+For any other compatible tool, check its docs for the global skills folder and how to reload skills. Restart or reload the tool after installing. If a tool does not support Agent Skills, adapt only the wrapper; keep the shared instructions and scripts unchanged where possible.
+
+In PowerShell, copy a whole skill folder to the destination used by your tool:
+
+```powershell
+$skill = "skills\windows-screenshot"
+$personalSkills = "$HOME\.claude\skills"
+New-Item -ItemType Directory -Force -Path $personalSkills | Out-Null
+Copy-Item -Recurse -Path $skill -Destination $personalSkills
+```
+
+Change `$personalSkills` to the global skills folder for your AI tool.
 
 ## What skills are best for
 
 Use a skill when:
-- You run the same workflow multiple times a day
-- You keep re-explaining the same steps to an agent
-- The task can be reduced to a series of commands with structured input and output
-- You want safer defaults (read-only first, explicit guardrails)
+- You run the same task often
+- You keep explaining the same steps to an AI tool
+- The task uses known inputs and returns a set format
+- You want safe defaults, such as read-only checks first
 
 Do not use a skill when:
 - The task is one-off and exploratory
 - Inputs change wildly every run
 - You still do not know what "good output" looks like
 
-## How skills save context and tokens
+## How Skills Save Time and Tokens
 
-Skills reduce token usage by moving long instructions out of chat (context window) and into reusable files, to be read on demand.
+Skills save tokens by keeping long instructions in files instead of repeating them in every chat. The tool reads them when needed.
 
 They save tokens by:
-- Replacing repeated prompt boilerplate with one short invocation
-- Returning compact script output instead of long natural-language reasoning
-- Avoiding back-and-forth on known steps and guardrails
-- Keeping workflow logic versioned in files, not retyped per session
+- Replacing repeated prompt text with one short request
+- Returning short script output instead of a long explanation
+- Avoiding repeat questions about known steps and safety rules
+- Keeping instructions in files instead of retyping them each time
 
-## Skill-first, script-second
+## Write the Instructions, Then the Script
 
-1. Write the skill contract first:
-- Trigger phrases
+1. Write the skill instructions first:
+- When to use it
 - Required inputs
-- Output contract
-- Guardrails
+- Expected output
+- Safety rules
 
 2. Implement the script second:
-- One command that runs end-to-end
-- Structured output (JSON or one deterministic final line)
-- Clear non-zero exit codes for common failures
+- One command that runs the full task
+- Fixed-format output (JSON or one final result line)
+- Clear error codes for common failures
 
 3. Add a minimal prompt/command wrapper only if needed.
 
-## What makes a good skill description (auto-detect)
+## Write a Clear Skill Description
 
 Good descriptions are concrete and match real user phrasing.
 
 Include:
-- Exact trigger phrases users type (for example: "screenshot app window", "quota forecast")
-- Clear tool boundary (when to use this skill, when not to)
-- Input normalization rules (substring match, expected date format)
-- Output contract (which line/field is authoritative)
-- Failure and fallback behavior
+- Example requests that should start the skill (such as "screenshot app window")
+- When to use it and when not to
+- How to read inputs (such as date format)
+- What the result must contain and where to find it
+- What to do when it fails
 
 Avoid:
 - Vague descriptions like "helps with debugging"
@@ -66,22 +92,25 @@ skills/
     README.md (optional)
 ```
 
-Keep each skill folder self-contained so it can be copied and reused.
+Keep each skill's files together so you can copy and reuse the whole folder.
 
-## 30-second preflight
+## Before You Run a Skill
 
 Before running any skill, verify:
 - Required command exists (provider CLI, `adb`, or other required tool)
 - Required runtime is available (connected device/app/session)
-- Expected output contract is known (JSON object or final path line)
+- Expected result format is known (JSON object or final path line)
 
 ## Skill index
 
-| Skill | Platform | Requires | Output contract |
+| Skill | Platform | Requires | Result |
 | --- | --- | --- | --- |
 | [copilot-quota-forecast](./copilot-quota-forecast/SKILL.md) | Windows | authenticated provider CLI (`gh` in this example) | Single JSON object |
 | [windows-screenshot](./windows-screenshot/SKILL.md) | Windows | desktop app window | Final stdout line is PNG path |
 | [android-screenshot](./android-screenshot/SKILL.md) | Android device/emulator + Windows host | `adb`, connected device | Final stdout line is PNG path |
+| [github-pr-flow](./github-pr-flow/SKILL.md) | Windows, macOS, Linux | Git, `gh`, Bash, Python 3 | PR readiness verdict or ordered PR-splitting workflow |
+| [repository-cleanup](./repository-cleanup/SKILL.md) | Any repository and supported OS | Repository instructions and local verification tools | Approved cleanup proposal, then verified change report |
+| [flutter-upgrade](./flutter-upgrade/SKILL.md) | Flutter/Dart projects | Flutter/Dart toolchain, package manager, repository CI guidance | Upgrade plan and verification report |
 
 ## Quick decision table
 
@@ -90,89 +119,95 @@ Before running any skill, verify:
 | Quota and burn forecast | [copilot-quota-forecast](./copilot-quota-forecast/SKILL.md) | "Will I run out of quota this month?" | Long ad-hoc prompt without running the forecast script |
 | Screenshot of native Windows app | [windows-screenshot](./windows-screenshot/SKILL.md) | "Capture a screenshot of the Flutter app window" | Browser screenshot tooling for non-browser native app windows |
 | Screenshot of connected Android device app | [android-screenshot](./android-screenshot/SKILL.md) | "Take screenshot from connected Android phone" | `windows-screenshot` when target is Android device/emulator |
-| Browser page screenshot (harness/browser tool) | Browser screenshot tooling | "Screenshot this web page in the browser" | `windows-screenshot` for browser pages |
+| Prepare or split GitHub PRs | [github-pr-flow](./github-pr-flow/SKILL.md) | "Check this PR for merge readiness" | Running cleanup before verifying the PR merged |
+| Plan or perform repository cleanup | [repository-cleanup](./repository-cleanup/SKILL.md) | "Propose a safe cleanup pass" | Deleting ignored files without inspecting them |
+| Upgrade Flutter, Dart, or pub packages | [flutter-upgrade](./flutter-upgrade/SKILL.md) | "Plan a safe Flutter SDK upgrade" | Updating only the obvious SDK pin or sharing credentials in logs |
+| Browser page screenshot | Browser screenshot tool | "Screenshot this web page in the browser" | Do not use `windows-screenshot` for browser pages |
 
 ## Reusable skill template
 
 Use [TEMPLATE-SKILL.md](./TEMPLATE-SKILL.md) as a starting point for new skills.
-It includes required metadata, trigger phrases, boundaries, output contract, exit codes, and guardrails.
+It includes required fields, example requests, limits, expected results, error codes, and safety rules.
 
 ## Reusing a skill in another repo or tool
 
-If you created a skill for one repo or one tool and want to reuse it elsewhere, the easiest path is to ask the AI agent to "import" the existing skill and provide the file system path to that skill folder.
+To reuse a skill, ask the AI tool to import it and give the path to its folder.
 
 Practical prompt example:
-- "Import existing skill from C:/path/to/skills/windows-screenshot into this repo."
+- "Import the skill from C:/path/to/ai-cookbook/skills/windows-screenshot into this repo."
 
 Copy/paste starters:
-- Same repo: "Import existing skill from ./skills/windows-screenshot into this repo."
-- Cross repo/tool: "Import existing skill from C:/path/to/other-repo/skills/android-screenshot into this repo and adapt paths only if needed."
+- Same repo: "Import the skill from ./skills/windows-screenshot into this repo."
+- Another repo: "Import the skill from C:/path/to/other-repo/skills/android-screenshot and adapt only the file paths that need to change."
 
-This avoids rebuilding the same skill from scratch and helps preserve proven trigger phrases, output contracts, and guardrails.
+This saves setup time and keeps the skill's tested requests, results, and safety rules.
 
 ## Example skills in this repo
 
 - [Copilot quota forecast example](./copilot-quota-forecast/SKILL.md)
 - [Windows screenshot capture example](./windows-screenshot/SKILL.md)
 - [Android screenshot capture example](./android-screenshot/SKILL.md)
+- [GitHub PR flow](./github-pr-flow/SKILL.md)
+- [Repository cleanup](./repository-cleanup/SKILL.md)
+- [Flutter and Dart upgrade](./flutter-upgrade/SKILL.md)
 
 ## Example 1: Copilot quota forecast
 
 How it works:
 1. Skill runs [forecast.ps1](./copilot-quota-forecast/forecast.ps1).
-2. Script calls a provider quota endpoint via provider CLI.
-3. Script enriches with country + holidays + local history.
+2. Script uses the provider CLI to get quota data.
+3. Script adds local country, holiday, and history data.
 4. Script emits one JSON object.
-5. Skill formats that JSON into a compact report and hides sensitive fields by default.
+5. Skill turns that JSON into a short report and hides sensitive fields by default.
 
-Why it saves tokens:
-- No need to re-explain API fields and reporting format every run.
-- Script handles data collection deterministically.
-- Skill enforces compact, repeatable output.
+Why the skill helps:
+- No need to repeat the data and report details each time.
+- Script gathers the data the same way each time.
+- Skill keeps the report short and consistent.
 
-Source this was ported from:
+Original files came from:
 - `<user-home>/.copilot-quota/`
 
-Fast fail:
+If it fails:
 - If provider CLI call fails, run auth status and re-authenticate (`gh auth status`, `gh auth login` in this example).
 
 ## Example 2: Windows screenshot capture
 
 How it works:
 1. Skill runs [capture.ps1](./windows-screenshot/capture.ps1) with a title substring.
-2. Script finds a visible top-level window, restores it if minimized, and captures with `PrintWindow`.
-3. Script saves PNG to temp and prints the absolute path as the final line.
-4. Skill returns the saved file path without trying to inline image bytes.
+2. Script finds the visible app window, restores it if minimized, and captures it with `PrintWindow`.
+3. Script saves the PNG in a temporary folder and prints the full path as the last line.
+4. Skill returns the file path instead of pasting image data into chat.
 
-Why it saves tokens:
-- Avoids repeated troubleshooting for DPI/window-capture edge cases.
-- Output contract is tiny: one path line.
-- Prevents expensive "read image into context" behavior unless explicitly requested.
+Why the skill helps:
+- Avoids repeat fixes for display scaling and window capture.
+- The result is one path line.
+- It does not send the image into chat unless asked.
 
 Source this was ported from:
 - `<other-repo>/.gsd/skills/screenshot/`
 
-Fast fail:
+If it fails:
 - If no window matches, list candidates with `Get-Process | Where-Object MainWindowTitle | Select-Object Id,ProcessName,MainWindowTitle`.
 
 ## Example 3: Android screenshot capture
 
 How it works:
 1. Skill runs [capture.ps1](./android-screenshot/capture.ps1).
-2. Script detects connected adb device (or uses provided device id).
+2. Script finds a connected adb device or uses the requested device ID.
 3. Script wakes device to avoid screensaver/idle lock visual state.
-4. Script detects foreground app and uses it in output filename.
-5. Script captures screenshot on device, pulls it to temp, and returns local path as final line.
+4. Script finds the open app and uses its name in the output file.
+5. Script takes the screenshot, copies it to a temporary folder, and prints the path as the last line.
 
-Why it saves tokens:
-- Encodes repeated adb wake/detect/capture/pull workflow once.
-- Same deterministic path-only output pattern as windows-screenshot.
-- Reduces repeated device-selection and command-debug prompting.
+Why the skill helps:
+- Saves the repeated adb steps in one place.
+- Returns one path line, like windows-screenshot.
+- Avoids repeating device-selection and command fixes.
 
-Fast fail:
-- If no device is usable, run `adb devices` and resolve `unauthorized` by accepting USB debugging prompt on device.
+If it fails:
+- If no device is usable, run `adb devices`. If it says `unauthorized`, accept the USB debugging prompt on the device.
 
 Rule of thumb:
-- If you repeat the same workflow 3+ times in a week, create a skill.
-- If a script can emit deterministic JSON or a deterministic final line, prefer script-backed skill flow.
+- If you repeat a workflow three or more times in a week, consider making a skill.
+- If a script can return the same JSON or final line each time, use the script from the skill.
 

@@ -1,21 +1,21 @@
 ---
 name: <skill-name>
-description: <One-sentence purpose. Include clear trigger phrases users actually say.>
+description: <Say what it does and give example requests that should start it.>
 ---
 
 # <skill-name>
 
-One-line summary of what this skill does.
+One short sentence that says what this skill does.
 
 ## Naming convention
 
-- Use platform prefix when platform-specific: `windows-`, `android-`, `linux-`.
-- Keep names action-focused: `screenshot`, `quota-forecast`, `log-scan`.
-- Avoid overloaded generic names that hide scope.
+- Add a platform prefix when needed: `windows-`, `android-`, `linux-`.
+- Name the action: `screenshot`, `quota-forecast`, `log-scan`.
+- Do not use vague names that hide what the skill does.
 
 ## When to use
 
-Use this skill when user asks things like:
+Use this skill when the user asks things like:
 - "<trigger phrase 1>"
 - "<trigger phrase 2>"
 - "<trigger phrase 3>"
@@ -34,16 +34,18 @@ Required:
 Optional:
 - `<input-name>`: <default and meaning>
 
-## How to invoke
+## How to Run It
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File "skills/<skill-name>/<script>.ps1" <args>
+powershell -NoProfile -ExecutionPolicy Bypass -File "<skill-folder>/<script>.ps1" <args>
 ```
 
-## Output contract
+Replace `<skill-folder>` with the path to the folder containing this `SKILL.md` file.
 
-- Success output: <what must be present, e.g., JSON object or final stdout line path>
-- Null handling: <how to render missing values>
+## Output Format
+
+- On success: <what the output contains, e.g. JSON or a final file path>
+- Missing values: <how to show them>
 - Failure behavior: do not fabricate results
 
 Expected fields (if JSON):
@@ -57,7 +59,7 @@ Expected fields (if JSON):
 - `<code>`: <failure condition>
 - `<code>`: <failure condition>
 
-## Guardrails
+## Safety Rules
 
 - <Safety rule 1>
 - <Safety rule 2>
@@ -78,8 +80,8 @@ Top failure signatures and fixes:
 - <error text> -> <fix>
 - <error text> -> <fix>
 
-## Why this skill saves tokens
+## Why This Skill Helps
 
-- <How it removes repeated prompting>
-- <How it keeps output compact>
-- <How it reduces back-and-forth>
+- <How it avoids repeating instructions>
+- <How it keeps results short and clear>
+- <How it avoids repeat questions>

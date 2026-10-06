@@ -17,32 +17,39 @@ Use this skill when the user asks:
 
 ## How to invoke
 
-Preferred command:
+This skill works with any AI tool that can run PowerShell. Use the script stored beside this `SKILL.md` file. Replace `<skill-folder>` with its installed folder path.
 
 ```powershell
-& "$PSScriptRoot\forecast.ps1"
+powershell -NoProfile -ExecutionPolicy Bypass -File "<skill-folder>\forecast.ps1"
 ```
 
 If shell is not PowerShell:
 
 ```powershell
-pwsh -NoProfile -ExecutionPolicy Bypass -File "skills/copilot-quota-forecast/forecast.ps1"
+pwsh -NoProfile -ExecutionPolicy Bypass -File "<skill-folder>\forecast.ps1"
 ```
 
-## Output contract
+## Output Format
 
 - Script prints exactly one JSON object to stdout.
 - If script fails, do not fabricate values.
 - Treat null fields as `n/a` in rendered output.
+- Treat `today` as the user's local calendar day, not a rolling 24-hour window.
 
 Primary fields:
 - `used`, `remaining`, `entitlement`, `percent_used`
 - `days_elapsed`, `days_remaining`
-- `burn_per_day`, `burn_last_24h`, `burn_last_7d`
+- `burn_per_day`, `burn_today_local`, `burn_last_24h`, `burn_last_7d`
 - `projected_month_end`, `projected_percent`, `safe_daily_budget`
+- `today_usage_note`
 - `verdict_icon`, `verdict_text`, `verdict_note`
 
-## Guardrails
+Render guidance:
+- Use `burn_today_local` for "today budget usage" and "today progress".
+- If `today_usage_note` is present, print it as a note instead of substituting `burn_last_24h`.
+- Keep `burn_last_24h` and `burn_last_7d` as separate rolling reference metrics.
+
+## Safety Rules
 
 - Never store raw JSON in workspace files unless user asks.
 - Never echo tracking IDs, org IDs, enterprise fields, or location fields unless user asks.

@@ -1,6 +1,7 @@
 #Requires -Version 5.1
-# Copilot quota forecast example script.
+# Copilot quota forecast — used by the /copilot-quota-forecast VS Code prompt.
 # Prints a single JSON object to stdout. Warnings go to stderr.
+# The script NEVER fails from holiday-related issues.
 #
 # Files (all under %USERPROFILE%\.copilot-quota\):
 #   config.json                       Optional. { "country": "US", "state": null, "holidays_enabled": true, "use_work_days_only": true }
@@ -71,14 +72,15 @@ $remaining   = [double]$snap.remaining
 $entitlement = [double]$snap.entitlement
 $overageOk   = [bool]$snap.overage_permitted
 $reset       = [datetime]::Parse($data.quota_reset_date_utc).ToUniversalTime()
-$now         = [datetime]::UtcNow
+$nowUtc      = [datetime]::UtcNow
+$nowLocal    = [datetime]::Now
 
 # --- Append snapshot to rolling history -----------------------------------
 try {
     if (-not (Test-Path $historyFile)) {
         'timestamp_utc,used,remaining,entitlement,percent_remaining' | Out-File -Encoding utf8 $historyFile
     }
-    "$($now.ToString('o')),$([int]$used),$([int]$remaining),$([int]$entitlement),$($snap.percent_remaining)" |
+    "$($nowUtc.ToString('o')),$([int]$used),$([int]$remaining),$([int]$entitlement),$($snap.percent_remaining)" |
         Add-Content -Encoding utf8 $historyFile
 } catch { Write-Warning "History write failed: $_" }
 
@@ -91,7 +93,7 @@ try {
     } elseif (-not $country) {
         $holidaysSource = 'no-country'
     } else {
-        $year         = $now.Year
+        $year         = $nowLocal.Year
         $holidayCache = Join-Path $configDir ("holidays-cache-{0}-{1}.json" -f $year, $country)
         $rawHolidays  = @()
 
@@ -124,7 +126,7 @@ try {
 
         # 3. Filter to current month + optional state
         if ($rawHolidays.Count -gt 0) {
-            $monthStart = [datetime]::new($now.Year, $now.Month, 1)
+            $monthStart = [datetime]::new($nowLocal.Year, $nowLocal.Month, 1)
             $monthEnd   = $monthStart.AddMonths(1).AddDays(-1)
             $stateCode  = if ($country -and $state) { "{0}-{1}" -f $country, $state } else { $null }
             foreach ($h in $rawHolidays) {
@@ -147,7 +149,7 @@ try {
 # Merge manual holidays (also non-fatal)
 try {
     if (Test-Path $manualHolidays) {
-        $monthStart = [datetime]::new($now.Year, $now.Month, 1)
+        $monthStart = [datetime]::new($nowLocal.Year, $nowLocal.Month, 1)
         $monthEnd   = $monthStart.AddMonths(1).AddDays(-1)
         Get-Content $manualHolidays | ForEach-Object {
             $line = $_.Trim()
@@ -163,7 +165,7 @@ try {
 } catch { Write-Warning "Manual holidays read failed: $_" }
 
 # --- Working-day counts ---------------------------------------------------
-$monthStart = [datetime]::new($now.Year, $now.Month, 1)
+$monthStart = [datetime]::new($nowLocal.Year, $nowLocal.Month, 1)
 $monthEnd   = $monthStart.AddMonths(1).AddDays(-1)
 $workingDaysThisMonth = 0
 $workingDaysRemaining = 0
@@ -173,15 +175,15 @@ while ($cur -le $monthEnd) {
     $isHoliday = $holidayMap.ContainsKey($cur.Date)
     if (-not $isWeekend -and -not $isHoliday) {
         $workingDaysThisMonth++
-        if ($cur.Date -gt $now.Date) { $workingDaysRemaining++ }
+        if ($cur.Date -gt $nowLocal.Date) { $workingDaysRemaining++ }
     }
     $cur = $cur.AddDays(1)
 }
 
 # --- Burn rate & projection (configurable basis) --------------------------
 $periodStart   = $reset.AddMonths(-1)
-$calendarDaysElapsed   = [math]::Max(0, ($now - $periodStart).TotalDays)
-$calendarDaysRemaining = [math]::Max(0, ($reset - $now).TotalDays)
+$calendarDaysElapsed   = [math]::Max(0, ($nowUtc - $periodStart).TotalDays)
+$calendarDaysRemaining = [math]::Max(0, ($reset - $nowUtc).TotalDays)
 
 if ($useWorkDaysOnly) {
     $daysElapsed   = [math]::Max(0, $workingDaysThisMonth - $workingDaysRemaining)
@@ -199,17 +201,51 @@ $projectedEnd  = if ($null -ne $burnPerDay) { [math]::Round($used + $burnPerDay 
 $projectedPct  = if ($null -ne $projectedEnd) { [math]::Round($projectedEnd / $entitlement * 100, 1) } else { $null }
 
 # --- Rolling burn from history --------------------------------------------
+$burnTodayLocal = $null
+$todayUsageNote = $null
 $burn24 = $null
 $burn7d = $null
 try {
-    $history = @(Import-Csv $historyFile)
+    $history = @(
+        Import-Csv $historyFile |
+            ForEach-Object {
+                [PSCustomObject]@{
+                    timestamp_utc = [datetime]::Parse($_.timestamp_utc).ToUniversalTime()
+                    used          = [int]$_.used
+                }
+            } |
+            Sort-Object timestamp_utc
+    )
     if ($history.Count -gt 1) {
-        $ago24 = $now.AddHours(-24)
-        $ago7d = $now.AddDays(-7)
-        $e24 = $history | Where-Object { [datetime]::Parse($_.timestamp_utc) -le $ago24 } | Select-Object -Last 1
-        $e7d = $history | Where-Object { [datetime]::Parse($_.timestamp_utc) -le $ago7d } | Select-Object -Last 1
-        if ($e24) { $burn24 = [int]$used - [int]$e24.used }
-        if ($e7d) { $burn7d = [int]$used - [int]$e7d.used }
+        $ago24 = $nowUtc.AddHours(-24)
+        $ago7d = $nowUtc.AddDays(-7)
+        $todayStartUtc = $nowLocal.Date.ToUniversalTime()
+        $todayStartEffectiveUtc = if ($todayStartUtc -gt $periodStart) { $todayStartUtc } else { $periodStart }
+        $todayBoundaryTolerance = [timespan]::FromMinutes(5)
+
+        $e24 = $history | Where-Object { $_.timestamp_utc -le $ago24 } | Select-Object -Last 1
+        $e7d = $history | Where-Object { $_.timestamp_utc -le $ago7d } | Select-Object -Last 1
+        $eToday = $history |
+            Where-Object { [math]::Abs(($_.timestamp_utc - $todayStartEffectiveUtc).TotalMinutes) -le $todayBoundaryTolerance.TotalMinutes } |
+            Sort-Object @{ Expression = { [math]::Abs(($_.timestamp_utc - $todayStartEffectiveUtc).TotalMinutes) } }, timestamp_utc |
+            Select-Object -First 1
+
+        if ($e24) {
+            $delta24 = [int]$used - [int]$e24.used
+            if ($delta24 -ge 0) { $burn24 = $delta24 }
+        }
+        if ($e7d) {
+            $delta7d = [int]$used - [int]$e7d.used
+            if ($delta7d -ge 0) { $burn7d = $delta7d }
+        }
+        if ($todayStartEffectiveUtc -eq $periodStart) {
+            $burnTodayLocal = [int]$used
+        } elseif ($eToday) {
+            $deltaToday = [int]$used - [int]$eToday.used
+            if ($deltaToday -ge 0) { $burnTodayLocal = $deltaToday }
+        } else {
+            $todayUsageNote = 'Unavailable: no history snapshot near local midnight yet.'
+        }
     }
 } catch { Write-Warning "History read failed: $_" }
 
@@ -233,7 +269,8 @@ foreach ($kv in ($holidayMap.GetEnumerator() | Sort-Object Key)) {
 }
 
 [PSCustomObject]@{
-    now_utc                  = $now.ToString('o')
+    now_utc                  = $nowUtc.ToString('o')
+    today_local_date         = $nowLocal.ToString('yyyy-MM-dd')
     login                    = $data.login
     plan                     = $data.copilot_plan
     reset_utc                = $reset.ToString('o')
@@ -254,6 +291,8 @@ foreach ($kv in ($holidayMap.GetEnumerator() | Sort-Object Key)) {
     working_days_remaining   = $workingDaysRemaining
     holidays_this_month      = $holidayList
     burn_per_day             = if ($null -ne $burnPerDay) { [math]::Round($burnPerDay) } else { $null }
+    burn_today_local         = $burnTodayLocal
+    today_usage_note         = $todayUsageNote
     burn_last_24h            = $burn24
     burn_last_7d             = $burn7d
     projected_month_end      = $projectedEnd

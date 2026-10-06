@@ -16,7 +16,7 @@ This is part of the No-nonsense AI Cookbook. Expect short instructions, useful e
 
 Use an AI coding tool that you can already access. No specific product or paid plan is required. Tools can have their own costs and limits. These are separate from the free course.
 
-For Windows setup, use the [required tools guide](../../PREREQUISITES-TOOLS.md) and [tool selection guide](../../TOOL-SELECTION.md).
+For Windows setup, use the [required tools guide](../../tools/PREREQUISITES-TOOLS.md) and [tool selection guide](../../tools/TOOL-SELECTION.md).
 
 ## Start now
 
