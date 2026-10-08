@@ -16,9 +16,10 @@ Read the repository's `AGENTS.md`, contribution guide, CI workflow, and any PR p
 
 ## Protect the Active Worktree
 
-- Do not switch branches, reset, force-push, or discard changes in the user's current worktree.
+- Do not switch branches, force-push, or discard changes in the user's current worktree while the PR is in flight.
 - Do not use `git stash push` to move the user's changes. If pending local work must be copied to another worktree, use the separate-worktree snapshot steps in [Split a large branch](references/SPLIT-LARGE-BRANCH.md).
 - Before merging updates into a worktree, confirm it is clean. Stop if it is dirty or a merge has conflicts; do not resolve the user's work by guessing.
+- The one exception is the post-merge cleanup step (`pr-cleanup.sh`): once a PR has actually merged, a dirty parent tree there is routinely just a stale pre-merge duplicate of what's already landed (the snapshot approach above never commits in the parent, only copies from it). That script verifies every dirty file against the merged default branch before resetting anything, and never discards a file it can't confirm is already shipped — see the script's own header comment.
 
 ## Helper Scripts
 
@@ -30,6 +31,8 @@ bash "<skill-folder>/scripts/pr-ready.sh" <PR-number>
 ```
 
 Replace `<skill-folder>` with this skill's installed folder. Review a script before running it. `pr-reply.sh` posts a GitHub comment, `pr-resolve.sh` resolves review threads, and `pr-cleanup.sh` removes a worktree and local branch; use those only at the matching step in the guides. Cleanup is optional and must not delete unmerged work.
+
+`pr-cleanup.sh` also folds the merged default branch back into the parent tree it's run from. If that parent tree is dirty, it does not just refuse and stop — it checks each dirty file against the newly-merged default branch (content-for-content, ignoring whitespace). A file that's a confirmed-stale duplicate of what's already on the default branch gets reset away; a file that is not found there is reported by name and left untouched, since it may be unique work that never shipped. Read the script's own header comment for the exact behavior before relying on it.
 
 Poll for new review threads **every 30 seconds** while CI is still running, not only after it finishes. When review fixes require a push, cancel only the superseded PR CI runs and push without waiting for their results. Confirm replacement CI starts for the new head and resume polling immediately. Follow the scoped cancellation and readiness steps in [Merge readiness](references/MERGE-READINESS.md).
 
