@@ -4,6 +4,8 @@
 
 Read [Start here](./START_HERE.md). Use one useful feature through Lessons 1-8. Keep its requirements, decisions, tasks, and test results together. One document can be enough.
 
+To have Copilot guide the exercises, use the starting prompt in [Run the course](./RUN_COURSE.md). The tutor gives you the next action; you do not need to invent prompts for each lesson.
+
 Use [Working with your planner](./PLANNER_WORKFLOW.md) for example requests and approval rules. An approval step is called a gate. You approve the goal at G1, the design at G2, and each task at G3. You accept checked work at G4.
 
 Combine early approvals for a small, low-risk change. You can draft tasks early. Do not start code changes while important questions remain unanswered.
@@ -20,7 +22,7 @@ The No-nonsense rule: use the fewest steps that give clear decisions and reliabl
 
 **Example:** Three export corrections may come from an unanswered question: export the current page or all matching rows?
 
-**Exercise:** Complete the [current-work worksheet](./experiments/baseline.md) for a recent task. Record what happened. Choose one possible cause to check.
+**Exercise:** Use the [current-work worksheet](./experiments/baseline.md) for a recent task. In a guided session, answer its six questions with a visible `Question X of 6` counter, then review the draft summary. The tutor fills fields from your answers; a separate question for every field is not required. Record what happened. Choose one possible cause to check.
 
 **Finish when:** You can describe the task from request to commit. Name one method to keep and one idea to test. Write `unknown` for missing measurements.
 
@@ -46,9 +48,9 @@ Compare the original request with the agreed requirements. Mark the decisions th
 
 **Example:** "Keep each customer's data separate" is a project rule. "Limit this export to 5,000 rows" is a feature requirement.
 
-**Exercise:** Ask the planner to read the related code and tests without changing them. Add useful links to your notes. Correct an old or missing rule if needed. Ask for new G1 approval if the code shows that the approved goal must change.
+**Exercise:** Complete the short [context comparison](./experiments/context-comparison.md). Compare the same calculator request with and without the approved Lesson 1 goal in two fresh conversations. Identify which guesses the saved goal prevents and where that source of truth lives. Do not add project files just to complete the lesson.
 
-**Finish when:** Each piece of information has a purpose. The planner can show where its claims came from. A new chat can find the rules without the old conversation.
+**Finish when:** You can name one concrete difference the approved context made, or explain why the comparison showed none. You know where the approved goal is recorded. If you inspect a real codebase, cite files for claims about its current behavior; do not invent project rules or code that is not there.
 
 ## Lesson 3 — Write the Specification and Plan Checks
 

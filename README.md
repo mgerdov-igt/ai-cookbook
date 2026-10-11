@@ -12,6 +12,8 @@ Then use:
 - [Skills](./skills/README.md): reusable instructions and scripts for compatible AI tools
 - [Courses](./courses/README.md): self-paced learning for software engineers
 
+For guided AI Software Engineering lessons, use [Run the course with Copilot](./courses/ai-software-engineering/RUN_COURSE.md). One starting prompt guides the exercises and helps you pause and resume.
+
 ## More Start Guides
 
 - [10-minute onboarding](./10-MINUTE-ONBOARDING.md): a guided setup after you choose a tool

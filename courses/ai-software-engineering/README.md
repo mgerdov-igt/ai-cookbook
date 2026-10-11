@@ -37,6 +37,8 @@ Clear, useful information is the goal. Formal STE compliance is not required.
 
 ## Start here
 
+Prefer a guided session? Use [Run the course with Copilot](./RUN_COURSE.md). Paste one starting prompt; the tutor guides each step and gives you the next message.
+
 1. Read [Start here](./START_HERE.md) to prepare and work safely.
 2. Complete the [current-work worksheet](./experiments/baseline.md) before you change your process.
 3. Follow the [practical lessons](./LESSON_PLAN.md) using one real feature at your own pace.
@@ -54,6 +56,7 @@ After Lesson 0, use [Working with your planner](./PLANNER_WORKFLOW.md) with the 
 - [Course plan](./COURSE_PLAN.md): required lessons and optional topics
 - [Lesson plan](./LESSON_PLAN.md): explanations, examples, exercises, and checks
 - [Start here](./START_HERE.md): what you need and how to begin
+- [Run the course with Copilot](./RUN_COURSE.md): starting prompt, next actions, and pause/resume
 - [Feature specification template](./templates/feature-spec.md)
 - [Agent task template](./templates/agent-task.md)
 - [Experiments](./experiments/README.md): how to compare ways of working

@@ -10,7 +10,7 @@ Use one useful feature throughout. Keep its requirements, decisions, tasks, and 
 | --- | --- | --- |
 | 0. Record how you work now | Describe your process before you change it | Current-work worksheet |
 | 1. Make requirements clear | Answer questions about the goal and limits | Approved goal; G1 |
-| 2. Give useful project information | Separate project rules from task details | Links to code, tests, and rules |
+| 2. Give useful project information | Compare an AI response with and without the approved goal | A concrete observation about what context changes |
 | 3. Write the specification and plan checks | Describe required behavior and how to test it | Written requirements and planned checks |
 | 4. Approve the system design | Compare choices and confirm rules to preserve | Approved design; G2 |
 | 5. Approve small tasks | State the result, needed work, checks, and stop rules | Approved first task; G3 |

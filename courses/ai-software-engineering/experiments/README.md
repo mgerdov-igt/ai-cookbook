@@ -16,4 +16,6 @@ Write `unknown` for missing measurements. Message counts are not token counts. F
 
 Start with the [current-work worksheet](./baseline.md). Describe one real task and how you completed it. Do this before changing tools or adding steps.
 
+Lesson 2 uses a short [context comparison](./context-comparison.md). Run the same request in two fresh conversations, then compare assumptions with and without the approved goal.
+
 No submissions are required. Do not put private information in this course project or an AI tool without permission. Remove private details before sharing examples.

@@ -2,6 +2,33 @@
 
 Use this worksheet before you change your process. Choose a recent task that is similar to your usual work. Describe what happened. Do not use this worksheet to grade yourself or an AI tool.
 
+## Guided Session: Six Questions
+
+The worksheet below is a reference, not a required interview of every field. In a guided session, use these six questions in order, one per turn. Show `Lesson 0 | Question X of 6 | Topic` before each question. Tell the learner the six-question limit before starting.
+
+| Question | Topic | Ask |
+| --- | --- | --- |
+| 1 | Task | What recent AI-assisted task will you use as your example? |
+| 2 | Process | Walk me through what happened, from the initial request to the point where you stopped or committed. |
+| 3 | Checks | What evidence did you use to decide whether the result was ready? |
+| 4 | Friction | Where did you spend effort correcting the AI or repeating work? |
+| 5 | What helped | What is one thing you did that helped you find a mistake or get a useful result? |
+| 6 | What might explain the rework | What do you think led to the repeated corrections you described? "I don't know" is fine. |
+
+Before Question 1, remind the learner to use only information they have permission to share, without private details. Keep this reminder short.
+
+Use earlier answers to fill the worksheet. Do not ask an answered question again; mark it covered and advance the counter. Do not split a question into several follow-up turns. Missing measurements stay `unknown`. A skipped answer stays `not provided`; it is not evidence of completion.
+
+For Question 5, explain that the learner is naming something useful they already did, not designing a new process. A short answer is enough: "Running tests helped me find the wrong output." Name the specific benefit when the learner has described it. Do not claim that every test, review, or document helped.
+
+For Question 6, explain that the learner is giving a possible explanation, not proving the root cause or planning a fix. For example: "The expected output was not clear before coding." If they do not know, record that. Do not ask them to invent a cause.
+
+At summary review, suggest one small idea to test based on the account and let the learner confirm or correct it. For example: "For one output, compare the generated result with an agreed example." If you suggest a possible cause, label it as a hypothesis, not a fact. Do not require the learner to design an experiment or a new workflow during the questions.
+
+After Question 6, show `Lesson 0 | Summary review | 6 of 6 questions covered`. Draft a short baseline summary, one method to keep, and one idea to test. State which finish criteria are met or still missing. Ask the learner to confirm or correct the summary in one reply. Do not start another interview or advance to Lesson 1 automatically.
+
+If a missing answer prevents completion, explain why and ask whether the learner wants to address that specific gap or pause. Six questions covered does not necessarily mean the lesson is complete. Further worksheet detail is optional.
+
 ## Safety check
 
 - [ ] I have permission to discuss this task and use these tools.

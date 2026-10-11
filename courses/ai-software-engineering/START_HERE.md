@@ -20,6 +20,8 @@ For Windows setup, use the [required tools guide](../../tools/PREREQUISITES-TOOL
 
 ## Start now
 
+For a guided conversation, use [Run the course with Copilot](./RUN_COURSE.md). It provides one starting prompt, exact next actions, and a way to pause and resume. In another project, replace the prompt's placeholder with the full local path to the course guide. Copilot does not discover the course automatically. You do not need to copy course files into your working project.
+
 1. Complete the [current-work worksheet](./experiments/baseline.md) for a recent task. Do this before you change your process.
 2. Choose one useful feature for the course exercises. Use a project that you have permission to use.
 3. Follow the [main lessons](./LESSON_PLAN.md) in order. Use the [course map](./COURSE_PLAN.md) to select optional topics when needed.
