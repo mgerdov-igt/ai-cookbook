@@ -1,56 +1,33 @@
-# No-nonsense AI Software Engineering: Course Map
+# Course Map
 
-A free course for experienced engineers. Study at your own pace. Begin with [Start here](./START_HERE.md). Use the [lesson plan](./LESSON_PLAN.md) for explanations and exercises.
+## Outcome
 
-## Core path
+Direct a bounded AI coding task from request to checked change. Practice on the bundled task-board project; do not use a personal project.
 
-Use one useful feature throughout. Keep its requirements, decisions, tasks, and test results together. You do not need a new document for each lesson. The planner helps you plan. You approve the work.
+## Choose a business request
 
-| Lesson | Practice | Result |
-| --- | --- | --- |
-| 0. Record how you work now | Describe your process before you change it | Current-work worksheet |
-| 1. Make requirements clear | Answer questions about the goal and limits | Approved goal; G1 |
-| 2. Give useful project information | Compare an AI response with and without the approved goal | A concrete observation about what context changes |
-| 3. Write the specification and plan checks | Describe required behavior and how to test it | Written requirements and planned checks |
-| 4. Approve the system design | Compare choices and confirm rules to preserve | Approved design; G2 |
-| 5. Approve small tasks | State the result, needed work, checks, and stop rules | Approved first task; G3 |
-| 6. Write code and check it | Use developer, tester, and reviewer steps as needed | Actual check results; G4 |
-| 7. Improve your method | Keep useful templates and rules | A small set of reusable tools |
-| 8. Review the final project | Check the full feature and compare your results | Final review and comparison |
+Choose one high-level request during Lesson 1:
 
-Use [Working with your planner](./PLANNER_WORKFLOW.md) for example requests and approval steps. Each approval step is called a gate. G1 approves the goal. G2 approves the specification and design. G3 approves a task. G4 accepts checked work.
-
-You can draft tasks early. Do not start code changes until the required decisions are approved. Ask for new approval if requirements or design rules change.
-
-## Optional extensions
-
-These topics are not required. Use them when you have a problem that they can help solve.
-
-| Extension | When useful |
+| Track (internal ID) | Business need |
 | --- | --- |
-| A. Reduce wasted effort | Repeated corrections, high tool use, or long reviews |
-| B. Use more AI tools | A repeated task needs automation or external data |
-| C. Improve code without changing behavior | A review finds a specific code or design problem |
+| `status-filter` | A team lead needs to focus on work items at a particular stage to see which work is open, underway, or finished. |
+| `owner-filter` | A team lead needs to review work assigned to a particular teammate to coordinate the team's workload. |
+
+These requests intentionally leave behavior open. During Lessons 1-3, the student clarifies the need, distinguishes project facts from assumptions, makes bounded behavior decisions, and builds a testable specification in `.course-progress/spec.md`. The tutor must not present the final filtering behavior as though it appeared in the original request.
+
+## Six-lesson path
+
+| Lesson | Topic | Result |
+| --- | --- | --- |
+| 1 | Understand the business request | A clear user need and important open questions |
+| 2 | Gather context and clarify behavior | Recorded decisions about matching, omitted values, and unmatched values |
+| 3 | Build and approve the specification | A reviewed `spec.md` with functional requirements, acceptance criteria, and checks |
+| 4 | Controlled implementation | The selected filter implemented in the private practice copy |
+| 5 | Checks and review | Actual test results and a reasoned acceptance decision |
+| 6 | Pause, resume, and transfer | A saved course state and a reusable way to direct AI work |
+
+Each lesson has a fixed number of exercises and an answer rubric in [the lesson plan](./LESSON_PLAN.md). The tutor shows one at a time. It offers a retry or lets the student continue; unmet exercises stay marked as skipped.
 
 ## Completion
 
-Show what you assigned to AI, what you approved, and how you checked the result. State what you would change next time. Use actual test results, not the AI's confidence. More documents or more agents do not prove success.
-
-## Optional Sources
-
-Reviewed on 2026-10-04: public course outlines and official guides. The full courses were not completed for this review.
-
-- [AI Dev Tools Zoomcamp 2026](https://github.com/DataTalksClub/ai-dev-tools-zoomcamp): closest match for the full development process.
-- Anthropic Academy: [Claude Code 101](https://academy.claude.com/courses/claude-code-101) and [Claude Code in Action](https://academy.claude.com/courses/claude-code-in-action). Useful for planning, project information, permissions, and review.
-- Supporting Claude Code guides: [good working practices](https://code.claude.com/docs/en/best-practices) and [permissions](https://code.claude.com/docs/en/permissions).
-
-| Source idea | How we use it |
-| --- | --- |
-| Zoomcamp compares a rough idea with specified work | Lesson 1 compares the original request with agreed requirements |
-| Zoomcamp checks the tests and release process | Lesson 6 checks that a test catches bad behavior. Lesson 8 adds release checks only when needed. |
-| Academy separates planning from code changes and limits tools | Lesson 5 checks tool permissions before code work |
-| Academy manages long chats and checks unattended work | Lesson 7 saves a short restart note. Lesson 6 gives unattended changes closer review. |
-
-Both sources support methods we already teach: clear requirements, short project rules, small tasks, and separate review.
-
-We do not adopt required cloud services, a fixed software stack, registration, certificates, or mandatory parallel agents. Read more only when it helps your current task. These links are optional, not course prerequisites.
+Complete the path by describing the agreed behavior, what changed, which checks actually passed, and any skipped work. The course does not ask for a certificate, submission, personal project, or deployment.

@@ -1,49 +1,42 @@
-# No-nonsense AI Software Engineering: Start Here
+# Start Here
 
-## Who this is for
-
-This course is for experienced software engineers who already use AI coding tools. It teaches clear requirements, system design, small tasks, and checks. It does not teach basic programming or general prompt writing.
-
-The course is free. Start when you are ready. There is no registration, payment, or class schedule.
-
-This is part of the No-nonsense AI Cookbook. Expect short instructions, useful examples, and clear checks. We assume you already know software engineering.
+The tutor leads the lessons. You do not need to prepare a project, invent a feature, write separate homework, or study the whole course first.
 
 ## Prerequisites
 
-- You can read, change, test, and review code without help.
-- You have tried an AI coding assistant in development work.
-- You have permission to use a real project, or you can use a separate test project.
+- A local checkout of this cookbook.
+- An AI coding tool that can read course files and follow the course's file boundary. Copilot CLI is the default example.
+- Windows 11 with PowerShell 7 for the bundled practice project.
 
-Use an AI coding tool that you can already access. No specific product or paid plan is required. Tools can have their own costs and limits. These are separate from the free course.
+The practice project has no package dependencies. Tool setup and costs are separate from the course; see [required tools](../../tools/PREREQUISITES-TOOLS.md) and the [Copilot setup guide](../../tools/copilot-cli/SETUP.md) if needed.
 
-For Windows setup, use the [required tools guide](../../tools/PREREQUISITES-TOOLS.md) and [tool selection guide](../../tools/TOOL-SELECTION.md).
+## Start or resume
 
-## Start now
+Open PowerShell in the course folder, then start Copilot from `.course-progress/`:
 
-For a guided conversation, use [Run the course with Copilot](./RUN_COURSE.md). It provides one starting prompt, exact next actions, and a way to pause and resume. In another project, replace the prompt's placeholder with the full local path to the course guide. Copilot does not discover the course automatically. You do not need to copy course files into your working project.
+```powershell
+Set-Location 'C:\path\to\ai-cookbook\courses\ai-software-engineering'
+New-Item -ItemType Directory -Path '.course-progress' -Force | Out-Null
+Set-Location '.course-progress'
+copilot
+```
 
-1. Complete the [current-work worksheet](./experiments/baseline.md) for a recent task. Do this before you change your process.
-2. Choose one useful feature for the course exercises. Use a project that you have permission to use.
-3. Follow the [main lessons](./LESSON_PLAN.md) in order. Use the [course map](./COURSE_PLAN.md) to select optional topics when needed.
-4. Keep your work and notes in your own project or private files.
-5. Complete the final project review. Compare your results with the first worksheet.
+Then copy and send this exact prompt:
 
-The planner helps you turn a rough request into clear requirements, a design, and tasks. You approve each important step. After Lesson 0, follow [Working with your planner](./PLANNER_WORKFLOW.md) with the lessons.
+```text
+Start the interactive AI Software Engineering course.
+The course folder is the parent of my current working directory.
+Read ..\RUN_COURSE.md and follow its Tutor Rules.
+Do not create or modify files outside .course-progress/.
+Begin or resume my local course progress. Show me the choices and wait.
+```
 
-## Outcomes
+Choose one of the two prepared task-board feature tracks. The tutor creates a private, ignored workspace copy and keeps lesson progress there. Answer each prompt in the AI chat. You may choose an option or type a short answer. Type `pause` to stop and `resume` to continue later.
 
-You will learn to write clear requirements, give useful project information, assign small tasks, and check AI changes. You will build a small set of templates and rules that you can use with any suitable AI tool.
+To continue in a new AI session, repeat the same PowerShell setup and send the same prompt. It starts the course if no progress exists and resumes from saved progress if it does.
 
-## Working agreements
+## What you will learn
 
-- You decide what to build, approve the design, and accept the result. The planner makes suggestions.
-- Check AI output against the requirements and actual test results.
-- Use more planning and checks when the risk is higher. Use fewer steps for a small, low-risk change.
-- Keep methods that help. Stop using methods that add work without better results.
-- Apply each lesson and check the result. Reading alone is not enough. Review by another person is optional.
+You will practice defining a bounded change, giving the AI useful context, reviewing a plan, approving code work, running checks, and evaluating results. The AI makes the proposed code change in the practice copy; you remain in control of decisions and acceptance.
 
-## Privacy and project safety
-
-You do not need to submit any work. Do not put personal details, passwords, access keys, customer data, or private code in this course project.
-
-Follow your employer's AI and data rules. Check how each tool uses your data. Remove private details before you share examples. Use a separate test project if needed.
+The AI's feedback evaluates each exercise against its published rubric. It does not certify professional skill or replace software tests and review. Do not share private code, credentials, personal data, or employer information.

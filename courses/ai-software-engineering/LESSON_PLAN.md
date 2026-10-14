@@ -1,171 +1,92 @@
-# No-nonsense AI Software Engineering: Lesson Plan
+# Lesson Plan and Exercise Rubrics
 
-## Use One Feature
+The tutor follows these six lessons in order. It presents one exercise at a time and does not reveal the expected answer before the student tries. Show the answer key only after the attempt. `✅ Strong` means the key points are present; `🟠❓ Needs one more piece` means the answer is incomplete but not contradictory; `❌ Not correct yet` means it conflicts with a fixed requirement or safety rule. A close paraphrase counts.
 
-Read [Start here](./START_HERE.md). Use one useful feature through Lessons 1-8. Keep its requirements, decisions, tasks, and test results together. One document can be enough.
+Whenever the student is expected to respond, put the exact question and response choices/instructions in a compact ASCII box headed `YOUR TURN`. Keep feedback and progress outside the box so the learner can immediately see what to answer. Use a fresh box for the `Try again` / `Continue` choice after feedback. Do not append another question or competing action after the box.
 
-To have Copilot guide the exercises, use the starting prompt in [Run the course](./RUN_COURSE.md). The tutor gives you the next action; you do not need to invent prompts for each lesson.
+Example:
 
-Use [Working with your planner](./PLANNER_WORKFLOW.md) for example requests and approval rules. An approval step is called a gate. You approve the goal at G1, the design at G2, and each task at G3. You accept checked work at G4.
+```text
+Progress: Lesson 2 of 6 | Exercise 2 of 6
 
-Combine early approvals for a small, low-risk change. You can draft tasks early. Do not start code changes while important questions remain unanswered.
++-----------------------------------------------------------+
+| YOUR TURN | Exercise 2 of 6                               |
+| Question: Which detail is stated in the business request? |
+|                                                          |
+| A) Exact matching is required                            |
+| B) The user needs to focus on a stage or teammate;        |
+|    matching rules are not specified                      |
+| C) Sorting is required                                    |
+|                                                          |
+| Reply with A, B, or C.                                    |
++-----------------------------------------------------------+
+```
 
-Each exercise improves the same feature. Record a short note after each lesson. No separate homework or submission is required.
+## Lesson 1 — Understand the Business Request (3 exercises)
 
-The No-nonsense rule: use the fewest steps that give clear decisions and reliable checks. Optional [source courses](./COURSE_PLAN.md) add detail, not required work.
+**Introduce before the first question:** This course uses a tiny work tracker for a software team. Show the four rows in `practice/README.md`. Explain that each row is a task, status shows its stage, and owner is the teammate responsible. Then show both business requests exactly as written in `practice/README.md`. Explain that these are the only starting requirements. They intentionally do not specify detailed behavior.
 
-## Lesson 0 — Record How You Work Now
+**Teach:** A business requirement explains the user, their need, and why it matters. It does not yet say exactly how the software behaves. A specification makes that behavior clear and testable. The student chooses one supplied request, not a feature design.
 
-**Main idea:** Understand your process before you change it. Quick work with AI can be useful. Find where unclear requests, errors, or repeated corrections cause problems.
+1. **Choose a request.** Offer the two business requests as written. Record the matching track ID privately in progress; do not rename the request to “status filter” or “owner filter” yet.
+2. **Restate the need.** Ask who needs what outcome and why. **Key:** the status request is about focusing on work at a particular stage; the owner request is about reviewing work assigned to a teammate to coordinate workload. Do not require an implementation idea.
+3. **Spot what is missing.** Ask for one important question that should be answered before implementation. Accept questions that affect observable behavior, such as how a user identifies the stage/teammate, what counts as a match, or what happens when the user has not chosen a value. Do not present one answer as the only valid question.
 
-**Common mistake:** Changing tools before you know what went wrong.
+**Finish when:** The student can state the user need and identify at least one consequential behavior that the business request leaves open.
 
-**Example:** Three export corrections may come from an unanswered question: export the current page or all matching rows?
+## Lesson 2 — Gather Context and Clarify Behavior (6 exercises)
 
-**Exercise:** Use the [current-work worksheet](./experiments/baseline.md) for a recent task. In a guided session, answer its six questions with a visible `Question X of 6` counter, then review the draft summary. The tutor fills fields from your answers; a separate question for every field is not required. Record what happened. Choose one possible cause to check.
+**Teach:** Clarifying questions turn an incomplete request into shared decisions. Ask about behavior that changes the result. Do not ask about implementation details before the expected behavior is clear. The tutor must ask one clarification at a time and record the student's decision.
 
-**Finish when:** You can describe the task from request to commit. Name one method to keep and one idea to test. Write `unknown` for missing measurements.
+1. **Find project facts.** Ask which file defines the current task data and retrieval behavior: `A: practice/WorkItems.ps1` / `B: a personal project` / `C: an unrelated tool guide`. **Key:** A. Show the actual four tasks from that file or the practice guide.
+2. **Separate facts from unknowns.** Ask which statement is established by the business request: `A: exact matching is required` / `B: the user needs to focus on a stage/teammate; matching rules are not specified` / `C: sorting is required`. **Key:** B. Keep the detailed key hidden until the student answers.
+3. **Clarify what to match.** First state that the business request does not say whether the student should enter a complete stage/name or just part of the text. Ask which rule is clearer for this small exercise: one complete value or partial text. Show examples using the selected field but do not give the recommendation before the attempt. **Key:** choose one complete value as the bounded course scope; for example, `Open` matches the two Open tasks, not `In Progress`. If the student prefers partial text, explain how that changes the exercise's fixed baseline, then let them choose the bounded course scope or pause. Do not mark the initial preference wrong; assess whether they understand the trade-off.
+4. **Clarify case handling.** Point out that the source has `Open` but a user may type `open`. Ask whether these should count as the same value and why. **Key:** yes, ignore letter case to make matching predictable and convenient. Record this as a clarified decision, not text from the original request.
+5. **Clarify an omitted value.** Ask what should happen when no stage/name is supplied: `A: return the full original list in its original order` / `B: return no tasks` / `C: treat the missing value as an error`. The bounded exercise scope is A because it preserves existing behavior. Explain the alternatives before asking; record the choice as a requirement.
 
-## Lesson 1 — Make Requirements Clear
+6. **Clarify an unmatched value.** Ask what the result should be when the user supplies a value that matches no task, such as `Blocked` for status or `Casey` for owner. **Key:** return no items. Explain that this is the published check's bounded behavior if the student proposes a different valid product choice, and record the source accurately.
 
-**Main idea:** Tell the planner what you want and what must not change. Ask questions in small groups. A guess is not an approved decision. You decide what to build. The AI can choose code details within your rules.
+For each clarification, capture: the question, decision, and effect on the result. Accept student questions and requests for examples. Never claim these details were present in the original BA request.
 
-**Common mistake:** Asking for an export feature without stating what it must include.
+The published checks define the bounded implementation contract. If a student proposes a different valid behavior, acknowledge the trade-off, then explain the relevant course constraint before asking them to approve the specification. Label its source as a course constraint; do not claim the BA requested it or that the student chose it. Do not ask the student to approve a spec containing a behavior they have not seen and discussed.
 
-**Example:** "Current page or all filtered results?" changes the required behavior, amount of data, and design.
+**Finish when:** The student can distinguish facts in the BA request from product alternatives and fixed course constraints, and can explain matching, case handling, omitted-value, and unmatched-value behavior in the bounded exercise.
 
-**Exercise:** Select your course feature. Use the planner guide's first example request. Ask for no more than three important questions at a time. Record confirmed requirements, guesses, unanswered questions, and work not included. Answer questions that prevent approval. Approve G1, or record why work cannot continue.
+## Lesson 3 — Build and Approve the Specification (4 exercises)
 
-Compare the original request with the agreed requirements. Mark the decisions that the AI would otherwise have guessed.
+**Teach:** A useful specification connects the original user need to observable behavior, decisions, acceptance criteria, and checks. Acceptance criteria state results a tester can verify. Keep the original business requirement separate from clarified functional requirements.
 
-**Finish when:** The planner can restate the goal without making decisions for you. You know what is approved. Code changes have not started.
+1. **Separate requirement levels.** Show the original BA request and ask which line belongs in the specification as the user need versus which is a detailed behavior decision or course constraint. **Key:** preserve the BA request as the problem/user need; record the matching rule, case handling, omitted-value behavior, and unmatched-value behavior as detailed requirements with their source labeled—not as claims from the original request.
+2. **Write an acceptance criterion.** Ask the student to turn one decision into a testable “Given/When/Then” or equivalent statement. Keep the expected result hidden until after the attempt. A strong criterion names the sample data, the selected input, and exactly which item IDs should and should not be returned. Do not require a particular sentence format if the expected result is precise.
+3. **Choose meaningful checks.** Ask which checks cover the agreed behavior: matching value, case variation, no value, and unmatched value. **Key:** all are needed; use the published sample data and check actual results. Keep check results blank until executed.
+4. **Review and approve the spec.** Draft `spec.md` inside `.course-progress/` with the original request, clarified decisions, functional requirements, acceptance criteria with expected results, checks, and non-goals. Include no implementation design unless needed. Ask the student to review and approve or correct it. Do not edit code before approval.
 
-## Lesson 2 — Give Useful Project Information
+**Finish when:** The approved specification preserves the high-level request, labels clarified decisions, defines testable behavior, and lists checks with expected results.
 
-**Main idea:** Context means information that the AI receives. Keep long-term rules in project files. Keep task details with the task. Give links to related code, tests, and shared input and output rules. Ask the planner to show the source of its claims.
+## Lesson 4 — Controlled Implementation (2 exercises)
 
-**Common mistake:** Pasting all project files into a chat or repeating the same rules in each request.
+**Teach:** Work only in `.course-progress/workspace/`. Change the smallest needed part. Do not edit the tracked starter or add features. Run the selected track's checks after coding.
 
-**Example:** "Keep each customer's data separate" is a project rule. "Limit this export to 5,000 rows" is a feature requirement.
+1. **Choose the allowed action.** `A: edit the private copy of WorkItems.ps1 to add the approved filter` / `B: change the tracked starter and both tracks` / `C: install a new framework`. **Key:** A.
+2. **Review the proposed result.** The tutor makes the change in the private copy, then summarizes changed lines and checks. Ask whether it stayed in scope. **Key:** only the selected filter and necessary local tests; retain all starter items and unfiltered ordering. If not, correct the code before proceeding.
 
-**Exercise:** Complete the short [context comparison](./experiments/context-comparison.md). Compare the same calculator request with and without the approved Lesson 1 goal in two fresh conversations. Identify which guesses the saved goal prevents and where that source of truth lives. Do not add project files just to complete the lesson.
+**Finish when:** The private copy implements only the approved track. If tool permissions prevent edits, report that blocker and do not claim completion.
 
-**Finish when:** You can name one concrete difference the approved context made, or explain why the comparison showed none. You know where the approved goal is recorded. If you inspect a real codebase, cite files for claims about its current behavior; do not invent project rules or code that is not there.
+## Lesson 5 — Checks and Review (3 exercises)
 
-## Lesson 3 — Write the Specification and Plan Checks
+**Teach:** A test result is evidence for a specific behavior. A passing result does not prove unrelated behavior. Keep failures and missing checks visible.
 
-**Main idea:** A specification is a written description of required behavior. Acceptance criteria are the specific results you must check. Give each one an ID, such as AC-1. Plan a check for each result before writing code.
+1. **Run the check.** Ask the student to choose: `A: run Run-Checks.ps1 in the private copy with the selected track` / `B: trust the tutor's explanation` / `C: test the tracked starter`. **Key:** A. The tutor runs it and records the actual output.
+2. **Interpret a failed check.** Give the real result if a check failed, or a fixed example failure if all pass. **Key:** investigate the behavior, keep the failure visible, correct within approved scope, rerun. Never call a failure a pass.
+3. **Accept or reject.** Present actual results. **Key:** accept only if all selected checks pass, the diff stays in scope, and there are no unresolved correctness findings. Otherwise report the exact blocker.
 
-**Common mistake:** Writing "secure and fast" without access rules, error behavior, or response-time requirements.
+**Finish when:** Each check has an actual result and the acceptance decision follows that evidence.
 
-**Example:** "If more than 5,000 rows match, return the agreed error and no file" is testable. "Handle large exports" is not clear enough.
+## Lesson 6 — Pause, Resume, and Transfer (2 exercises)
 
-**Exercise:** Write the [feature specification](./templates/feature-spec.md) with the planner. State required behavior, limits, and work not included. List planned checks and expected results by ID. Ask a tester to check a normal case, a limit, and an error case in the plan. Correct the specification before design approval.
+**Teach:** A local progress record carries the course position, selected track, completion, skips, and actual checks. It is not a substitute for rechecking changed code.
 
-**Finish when:** Each requirement has a clear check. Unanswered questions are listed. Keep actual results empty until tests run. Leave G2 pending until you approve the design.
+1. **Resume safely.** Ask what the tutor should do with existing progress: `A: read and summarize it, then confirm before continuing` / `B: overwrite it and start over` / `C: guess the next lesson`. **Key:** A.
+2. **Transfer the method.** Ask for one short instruction the student could use on future AI work. **Key:** mention a bounded goal, relevant project context, approval before edits, and evidence from checks. Accept any useful combination that does not claim tests replace review.
 
-## Lesson 4 — Approve the System Design
-
-**Main idea:** Architecture means the system's main parts and how they work together. Ask the architect to check data ownership, access rules, shared interfaces, and operating limits. Prefer existing designs unless a change has a clear benefit. You do not need to choose every function.
-
-**Common mistake:** Asking for several complex designs and letting the AI select one without your approval.
-
-**Example:** The export may reuse the current data query instead of adding a background job system. A row limit does not prove that the query is fast enough.
-
-**Exercise:** Ask the planner to request a design review of your specification and current code. Compare the simplest suitable choice with another choice when needed. Record your decision, reasons, risks, and required checks. Update the specification. Approve G2 only after important design questions are answered.
-
-**Finish when:** You can explain what stays unchanged and why you chose the design. Investigate unresolved safety or performance risks. Do not replace missing results with guesses.
-
-## Lesson 5 — Approve Small Tasks
-
-**Main idea:** Each task needs a useful result, clear limits, and a check. Split work by behavior and required order. Work can run at the same time only when shared interfaces and responsibilities are agreed. A small feature may need one task.
-
-**Common mistake:** Assigning a whole feature with no stop rules, or creating too many small tasks.
-
-**Example:** "Export this customer's matching orders within the row limit, with tests" has a result. "Create helpers" may not.
-
-**Exercise:** Ask the planner for a short task list. Complete the [task template](./templates/agent-task.md) for the first task. Include requirement IDs, work that must finish first, allowed changes, test commands, and stop rules. Approve G3. Add detail to later tasks only when needed.
-
-Check tool permissions before starting. Let planning and review roles read without changing files where the tool supports this. Written instructions alone do not restrict tool access. Use tool settings and safe test environments for needed limits.
-
-**Finish when:** The developer knows what to change, what to check, and when to stop. It does not need to guess the goal or design.
-
-## Lesson 6 — Write Code and Check It
-
-**Main idea:** Writing code and checking it are different jobs. Developer, tester, and reviewer can be separate steps with one tool. Start a new chat for review to reduce influence from the coding discussion. A new chat alone does not prove that the review is independent or correct.
-
-**Common mistake:** Letting the coding chat write tests from its own assumptions and then declare success.
-
-**Example:** A file-format test passes, but a full request test finds another customer's data. Test the requirement, not just the new function.
-
-**Exercise:** Write code for the approved task. Run the planned tests, error-case tests, build, and other required checks. Give a reviewer the approved specification, design, code changes, and actual results. Ask the planner to list failures, review findings, and results for each requirement. Repeat for the other approved tasks.
-
-Where practical, confirm that one important test rejects known bad behavior in a safe test setup. Restore the correct version and rerun it. Review unattended changes more closely. Focus review findings on errors, missing requirements, and broken design rules, not optional style choices.
-
-**Finish when:** Mark each requirement passed, failed, or not checked. Explain missing checks. Required checks that fail or have not run prevent acceptance. Inspect changes for extra work or broken design rules. Get new approval if requirements or shared interfaces change. Fixing a local error within approved rules does not require a new design.
-
-## Lesson 7 — Improve Your Method
-
-**Main idea:** Keep only the templates and rules that helped. Clear project notes make new chats easier. Too many notes can waste time and hide important information.
-
-**Common mistake:** Building a large AI tool system before proving that it solves a repeated problem.
-
-**Example:** One access rule and a short task template can replace repeated explanations. Five similar review lists may not help.
-
-**Exercise:** Review unclear decisions, corrections, errors, and your review time for this feature. Keep useful project rules and specification, task, and review templates. In a new chat, ask an AI to find the rules and propose a task plan. Do not allow changes yet. Remove unused notes and add missing information.
-
-Before ending a long chat, save a short restart note: goal, approved decisions, changed files, checks still needed, and next action. Check the note before giving it to a new chat.
-
-**Finish when:** You can use the saved material without the old chat or a specific AI product. Each item has a purpose. Code cleanup is optional and needs a specific reason.
-
-## Lesson 8 — Review the Final Project
-
-**Main idea:** Show decisions and actual results, not a large set of documents. Your course feature can be the final project. You do not need to start another project.
-
-**Common mistake:** Showing a working demo without explaining the requirements, approvals, or missing checks.
-
-**Example:** The export review links each requirement to an approved task, code change, test result, and acceptance decision.
-
-**Exercise:** Finish the feature. Review requirements, design, approved tasks, code changes, test results, review findings, and documentation. Check that the final code follows the approved design. Explain why any optional work was not needed. Compare results with your first worksheet. Note differences in task difficulty and tools.
-
-If the feature will be released, state how to check it after release and how to undo it. Use the project's existing release process. A public deployment or new monitoring system is not required.
-
-**Finish when:** Explain what you assigned to AI, what you approved, and why you accepted the result. State what is not checked. Record three methods to keep, one to stop, and one idea to test next.
-
-## Optional Topics
-
-### A. Reduce Wasted Effort
-
-**Main idea:** Include errors, repeated work, and your time when comparing AI costs. Extra useful information can cost less than repeated corrections. Tokens are small units of text that AI tools process.
-
-**Common mistake:** Saving tokens while increasing debugging time, or treating message counts as token counts.
-
-**Example:** A new chat with clear requirements can avoid repeated explanations. It also takes time to supply the information again.
-
-**Exercise:** Compare two similar tasks or repeat a task from notes. Record messages, corrections, errors, review time, and tool use when known. Use the [experiment guide](./experiments/README.md). Mark missing measurements `unknown`. Note differences in the tasks and the order you tried them.
-
-**Finish when:** Choose a clear rule for when to stop or start a new chat. If the same misunderstanding keeps returning, correct the requirements or project information first.
-
-### B. Use More AI Tools
-
-**Main idea:** A skill stores instructions for repeated work. A subagent is an AI assigned a separate task. MCP connects an AI tool to other tools or data. A hook runs an action when a named event occurs. Use these tools only when they solve a problem.
-
-**Common mistake:** Connecting tools or adding agents before finding a repeated need.
-
-**Example:** A local test may need a script, not another agent or an external data connection.
-
-**Exercise:** Compare instructions, a script, a separate AI step, and no automation for a repeated task. For external access, list data sent, required access keys, possible changes, and how to disable the connection. Give only the permissions needed. Try a part that you can undo. Use official product guides for setup.
-
-**Finish when:** Each added tool has a clear benefit. You do not need a live MCP connection or a fixed number of agents.
-
-### C. Improve Code Without Changing Behavior
-
-**Main idea:** Refactoring means changing code structure without changing its required behavior. Do it to fix a specific maintenance or design problem. A change must be worth its risk.
-
-**Common mistake:** Removing code because it looks AI-written, or turning a small cleanup into a new design.
-
-**Example:** Two copies of an access check can give different answers later. An unfamiliar helper name alone may not need a change.
-
-**Exercise:** If review found a specific problem, choose one small improvement. Add tests that protect existing behavior. Approve the change, make it, rerun tests, and review the result. Skip this topic if no useful improvement is needed.
-
-**Finish when:** The change solves a named problem and keeps the approved behavior. If required behavior changes, update and approve the specification first.
+**Finish when:** Progress is saved, the next action is clear, and the student can name a reusable practice.

@@ -12,7 +12,7 @@ Then use:
 - [Skills](./skills/README.md): reusable instructions and scripts for compatible AI tools
 - [Courses](./courses/README.md): self-paced learning for software engineers
 
-For guided AI Software Engineering lessons, use [Run the course with Copilot](./courses/ai-software-engineering/RUN_COURSE.md). One starting prompt guides the exercises and helps you pause and resume.
+For interactive AI Software Engineering lessons, open [the course folder](./courses/ai-software-engineering/README.md) in your AI coding tool. The tutor uses a bundled practice project and saves local progress so you can pause and resume.
 
 ## More Start Guides
 

@@ -1,69 +1,46 @@
-# No-nonsense AI Software Engineering
+# Interactive AI Software Engineering Course
 
-A free course for experienced software developers who use AI to write code. Study at your own pace. No registration is required.
+A self-paced course for software engineers who want to guide AI coding work with better requirements, context, checks, and review. The AI tutor leads the course in the chat. Lessons use a bundled practice project, not a project the student must invent or bring.
 
-Part of the [No-nonsense AI Cookbook](../../README.md).
+## Start the course
 
-## Purpose
+1. Start Copilot CLI from `.course-progress/`:
 
-Learn how to control AI coding work:
+   ```powershell
+   Set-Location 'C:\path\to\ai-cookbook\courses\ai-software-engineering'
+   New-Item -ItemType Directory -Path '.course-progress' -Force | Out-Null
+   Set-Location '.course-progress'
+   copilot
+   ```
 
-- Give clear requirements.
-- Keep control of the system design.
-- Give the AI the project information it needs.
-- Split work into small tasks.
-- Test and review the result.
-- Reduce repeated corrections and wasted effort.
+2. Copy and send this exact prompt:
 
-## Target learner
+   ```text
+   Start the interactive AI Software Engineering course.
+   The course folder is the parent of my current working directory.
+   Read ..\RUN_COURSE.md and follow its Tutor Rules.
+   Do not create or modify files outside .course-progress/.
+   Begin or resume my local course progress. Show me the choices and wait.
+   ```
 
-You can already write, test, and review software. You use AI coding tools and want more control over their work.
+3. Answer the tutor's questions or choose from its options. Type `pause` to save and return later.
 
-## Guiding principle
+Use the same commands and prompt in a later AI session. The tutor checks the saved progress and resumes from it; you do not need to write a separate resume prompt.
 
-> Give the AI clear rules and useful information. Check its work. Keep important decisions under your control.
-
-## The No-nonsense Rule
-
-Respect the time and experience of busy engineers. Start with what to do, why it matters, and how to check it.
-
-- Use plain English and short examples.
-- Explain a technical term only when needed.
-- Teach basic programming elsewhere.
-- Add a tool or step only when it solves a real problem.
-- Link to detailed sources instead of repeating them.
-
-Clear, useful information is the goal. Formal STE compliance is not required.
-
-## Start here
-
-Prefer a guided session? Use [Run the course with Copilot](./RUN_COURSE.md). Paste one starting prompt; the tutor guides each step and gives you the next message.
-
-1. Read [Start here](./START_HERE.md) to prepare and work safely.
-2. Complete the [current-work worksheet](./experiments/baseline.md) before you change your process.
-3. Follow the [practical lessons](./LESSON_PLAN.md) using one real feature at your own pace.
-
-## Central workflow
-
-Work with a planner: an AI that helps you ask questions, write a plan, and assign tasks. You approve the requirements, design, and final result.
-
-The architect proposes the system design. The developer writes code. The tester checks behavior. The reviewer checks the changes and test results. These can be separate steps with one AI tool. You do not need agents that run at the same time.
-
-After Lesson 0, use [Working with your planner](./PLANNER_WORKFLOW.md) with the lessons.
+See [Run the interactive course](./RUN_COURSE.md) for setup, tutor behavior, progress storage, and safety boundaries.
 
 ## Course materials
 
-- [Course plan](./COURSE_PLAN.md): required lessons and optional topics
-- [Lesson plan](./LESSON_PLAN.md): explanations, examples, exercises, and checks
-- [Start here](./START_HERE.md): what you need and how to begin
-- [Run the course with Copilot](./RUN_COURSE.md): starting prompt, next actions, and pause/resume
-- [Feature specification template](./templates/feature-spec.md)
-- [Agent task template](./templates/agent-task.md)
-- [Experiments](./experiments/README.md): how to compare ways of working
-- [Learning log](./LEARNING_LOG.md): course changes and lessons learned
+- [Start here](./START_HERE.md): prerequisites and the first step
+- [Course map](./COURSE_PLAN.md): outcomes and lesson order
+- [Lesson plan](./LESSON_PLAN.md): fixed exercises and assessment rubrics
+- [Tutor workflow](./PLANNER_WORKFLOW.md): how the tutor teaches and evaluates
+- [Bundled practice project](./practice/README.md): two predefined feature tracks, starter files, and checks
 
-## Status
+## Student data and workspace
 
-Course materials updated: 2026-10-04. Start with Lesson 0. Study at your own pace.
+The course saves progress and a writable copy of the practice project in `.course-progress/`. Git ignores this folder. The tracked lessons and starter files remain unchanged. Keep private or employer data out of course answers and saved progress.
 
-Change the methods when your results show a better way to work.
+## Intended learner
+
+You can already read and review code. The course teaches how to direct an AI coding assistant; it does not teach programming basics. The course is free, self-paced, and does not require registration. Your AI tool may have separate costs.

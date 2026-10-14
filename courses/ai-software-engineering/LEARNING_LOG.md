@@ -1,6 +1,8 @@
 # No-nonsense AI Software Engineering: Learning Log
 
-Use this file to record course changes and lessons learned.
+Use this file for course design changes, not student progress. Entries before
+2026-10-11 describe an earlier, project-based course design that is no longer
+the student workflow.
 
 ## 2026-10-04 — Course initialized
 
@@ -11,10 +13,6 @@ Initial goals:
 - Keep control of the system design.
 - Build methods that can be used again.
 - Keep using the learner's software engineering experience.
-
-## Next step
-
-Complete Lesson 0. Describe how you worked on one real project task.
 
 ## 2026-10-04 — Course delivery materials drafted
 
@@ -51,3 +49,9 @@ Named the course No-nonsense AI Software Engineering in the main pages. File nam
 Reviewed Zoomcamp 2026 and Anthropic Academy public outlines, plus official Claude Code guides. Added small checks for guessed requirements, test quality, tool permissions, restart notes, unattended work, and release safety. Sources and choices are in the course map. These are course edits, not proof of improved learner results.
 
 Kept the same nine main lessons. No required cloud stack, vendor account, registration, certificate work, or extra agents were added.
+
+## 2026-10-11 — Interactive Guided Course Direction
+
+Replaced the bring-your-own-project course flow with a tutor-led course in the course folder. Students choose one of two predefined task-list filtering exercises, answer questions in the AI chat, get rubric-based feedback, and can retry or continue. A bundled PowerShell practice project provides the code exercise. Progress and the writable practice copy belong in the ignored `.course-progress/` folder.
+
+The six lessons now move from goal and scope through context, approval, implementation, checks, and resume/transfer. Copilot CLI is the default tool, but the lesson files describe a tool-neutral tutor where possible. The handoff file in `courses/` records durable design decisions and what still needs an end-to-end trial.

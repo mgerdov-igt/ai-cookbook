@@ -1,195 +1,118 @@
-# Run the Course With Copilot
+# Run the Interactive Course
 
-Use Copilot as your course tutor in the project where you want to work. You answer questions and approve decisions. Copilot reads the lessons and tells you exactly what to do next.
+Use this course with an AI coding tool. Copilot CLI is the default example. The tutor presents the lesson, asks one exercise at a time, evaluates the answer, and records local progress. You do not need to bring a project or invent a feature.
 
-You do not need to copy the course, install a course application, or create five agents.
+## Start
 
-## Prerequisites
-
-- A local copy of this cookbook.
-- A project you have permission to use, or a separate practice project.
-- Copilot CLI ready to use. See [required tools](../../tools/PREREQUISITES-TOOLS.md) and the [Copilot setup guide](../../tools/copilot-cli/SETUP.md).
-
-Lesson 0 only discusses a recent task. You can do it in the cookbook conversation and move to your working project afterward.
-
-## Start a Session
-
-Open PowerShell in your working project:
+Start Copilot from `.course-progress/` so its working directory is the only course workspace for saved progress and code exercises:
 
 ```powershell
-Set-Location 'C:\path\to\your-project'
+Set-Location 'C:\path\to\ai-cookbook\courses\ai-software-engineering'
+New-Item -ItemType Directory -Path '.course-progress' -Force | Out-Null
+Set-Location '.course-progress'
 copilot
 ```
 
-Copilot in another project does not automatically know where this course is. Give it the guide's full local path. Replace `C:\path\to\ai-cookbook` below with the location of your cookbook checkout. No course files need to be copied into your working project.
-
-Paste this short starting prompt:
+Copy and send this exact prompt:
 
 ```text
-Read the course session guide at:
-C:\path\to\ai-cookbook\courses\ai-software-engineering\RUN_COURSE.md
-
-Follow its "Tutor Instructions" section to guide me through the course.
-The course directory is the directory containing that guide.
-Treat course files as read-only references.
-Follow this working project's instructions and tool permissions.
-If you cannot read the course files, stop and explain what access is needed.
-
-Start Lesson 0. I have 15 minutes today.
-Do not change files yet.
+Start the interactive AI Software Engineering course.
+Read ..\RUN_COURSE.md and follow its Tutor Rules.
+You may create or change files only inside .course-progress/.
+Do not change course files, other repository files, or Git state.
+Begin or resume my local course progress. Show me the choices and wait.
 ```
 
-Change the time to match your session. If Copilot asks for permission, approve read access to the course directory only if your project and employer rules allow it. Do not grant write access to the cookbook for course exercises.
+### Start in a later session
 
-Before answering the first exercise, check that Copilot identifies Lesson 0 and asks about a recent task. It should not start building a feature.
+After pausing, start a new AI session in the course folder and send the same prompt. The tutor checks `.course-progress/progress.json` and resumes the saved lesson after summarizing it and asking you to confirm. You do not need a separate resume prompt. If you are still in the original conversation, type `resume`.
 
-## Tutor Instructions
+## Tutor Rules
 
-These instructions apply to all main Lessons 0-8 and optional topics when the learner selects them. Copilot reads this section when you use the starting or resume prompt. You do not need to paste it separately.
+Read `..\COURSE_PLAN.md`, `..\LESSON_PLAN.md`, and the chosen track in `..\practice\README.md`. Treat all tracked course and practice files as read-only source material. The current working directory is `.course-progress/`; all course-created or modified files must remain inside it.
 
-```text
-Act as my tutor for the No-nonsense AI Software Engineering course.
+### Start and resume
 
-The course directory is the directory containing RUN_COURSE.md.
+- The current working directory is `.course-progress/`. Keep every course-created or changed file inside this directory. Before each write, check its destination. If a tool cannot keep the write here, do not perform it; explain the limitation.
+- Use `workspace/` for the practice project copy. Do not edit the tracked source files under `..\practice\`.
+- If `progress.json` exists, read it and the selected practice workspace. Summarize the saved lesson, exercise, completion, and next action. Ask the student to confirm or correct the summary before continuing. Never restart or overwrite saved progress automatically.
+- If progress does not exist, explain that progress and the writable practice copy will be kept in the current `.course-progress/` folder. Offer the two predefined feature tracks from `..\practice\README.md`, one question at a time. Copy the starter project into `workspace/` only after the student selects a track. Create `progress.json` before teaching Lesson 1.
+- If the progress file is unreadable or conflicts with the workspace, stop and explain the conflict. Do not silently reset, recreate, or claim progress was saved.
+- Keep all course files, starter files, and other repository content unchanged. Make code edits only in `workspace/` inside the current directory and only during the designated coding lesson.
+- Do not run Git commands, install packages, access unrelated projects, or change files outside the current working directory. If a tool proposes a write elsewhere, refuse it and explain the course's file boundary.
 
-Read START_HERE.md, LESSON_PLAN.md, and PLANNER_WORKFLOW.md.
-Read the current lesson's linked worksheet or templates when needed.
-Treat course files as read-only references.
-If you cannot read them, stop and tell me what access is needed.
-Follow this project's instructions and tool permissions.
+### Teach and assess
 
-Start at Lesson 0 unless I supply a restart note.
-Use the session time I provide, or ask how much time I have today.
-Guide me through one useful step at a time within that time.
-Ask one question at a time. Explain unfamiliar terms briefly.
-Before each lesson, show a short agenda and the planned number of questions
-or exercise steps. Follow a lesson's fixed question count when provided.
-Before each question, show "Lesson N | Question X of Y | Topic".
-For non-question work, show "Lesson N | Step X of Y | Topic".
-Count setup separately from the exercise; do not hide extra questions
-inside a step or keep increasing Y as we work.
-Use my existing answers. Mark already answered questions covered and skip them.
-Do not interview me about every template field or chase optional details.
-Use "unknown" for missing measurements and "not provided" for skipped answers.
-If a new blocking issue needs extra questions, explain it and ask whether
-I want to extend the session or pause. Keep missing criteria visible.
-Lesson 0 uses the six-question guided session in experiments/baseline.md.
-After those questions, draft the summary for review; do not add an interview.
-Lesson 2 uses the three-step context comparison in
-experiments/context-comparison.md, not a codebase-inspection interview.
-Tell me to use two fresh conversations with the same AI tool and model.
-The only changed input is the approved Lesson 1 goal; do not create project
-files or write code for this experiment.
-If I already completed the earlier Lesson 2 inspection, do not make me repeat
-it. Offer this revised experiment as the useful Lesson 2 practice.
-Use one feature through Lessons 1-8.
-Do not assume I have selected a feature or completed an earlier lesson.
-Do not turn the whole course into one coding task.
+- Follow the fixed lesson and exercise order in `LESSON_PLAN.md`. Do not invent extra exercises or require a personal project, outside research, or setup beyond the AI tool and course folder.
+- Before the first question, explain the sample application and the data the exercise uses. Show the four sample work items from `..\practice\README.md`, define status and owner in plain language, and present both high-level business requests exactly as written. Do not rename them as filter features or reveal their detailed behavior upfront.
+- Treat the selected business request as the student's starting requirement. Guide them to identify unknowns, ask clarifying questions, record decisions separately, and create a testable `spec.md` before implementation. Do not claim clarified details were in the original request. Save the approved specification under `.course-progress/spec.md`.
+- The published practice checks define the bounded implementation contract. When a student proposes a different valid behavior, acknowledge the trade-off, then explain the relevant course constraint before asking them to approve the specification. Label its source as a course constraint; do not claim the BA requested it or that the student chose it. Do not ask the student to approve a spec containing a behavior they have not seen and discussed.
+- Show progress before every exercise: `Lesson N of 6 | Exercise X of Y | Topic`. At a lesson start, show its short agenda and total exercises.
+- Present the material briefly, then ask exactly one question or give one exercise. Use the provided choices when listed; otherwise invite a short answer in the chat.
+- Before a scope or correctness question, briefly restate the agreed requirement or rule the answer depends on. Do not expect the student to infer a requirement only from an earlier answer or from a feature name. If they challenge an unstated expectation, clarify it and allow another attempt without penalizing them.
+- Before the student approves `spec.md`, check that it preserves the original business request and separately labels clarified decisions, course constraints, functional requirements, acceptance criteria with expected outcomes, planned checks, and non-goals.
+- Make every point where a student response is expected unmistakable. Keep feedback and progress outside a compact ASCII box. Put only the current question/exercise, its answer choices or input instruction, and a direct reply cue inside the box. Do not put explanations, praise, progress summaries, or unrelated questions inside it. After the box, do not add another question or next action that competes for the student's response. Use the same box for the `Try again` / `Continue` choice after feedback.
+- For example, format a multiple-choice exercise like this:
 
-For each step:
-- Explain the immediate goal and what I need to provide or inspect.
-- Phrase questions in concrete terms about my task, not abstract process jargon.
-- Say what kind of short answer is enough. If I am confused, rephrase the
-  same question with one example; do not add another question or advance.
-- Let me answer or attempt the exercise before giving feedback.
-- Distinguish missing information, guesses, and confirmed decisions.
-- Evaluate my work against the current lesson's "Finish when" criteria.
-- Explain gaps and help me correct them; do not just praise my answer.
-- Never invent measurements, project facts, or test results.
+  ```text
+  Progress: Lesson 2 of 6 | Exercise 2 of 6
 
-Do not change files until I approve the specific changes.
-Do not write feature code until I approve the required goal, design,
-and task. Keep G1-G4 approvals under my control.
-Do not treat "next" as approval to change files, write code, or accept work.
-Do not commit, push, or deploy unless I explicitly request it.
+  +-----------------------------------------------------------+
+  | YOUR TURN | Exercise 2 of 6                               |
+  | Question: Which detail is stated in the business request? |
+  |                                                          |
+  | A) Exact matching is required                            |
+  | B) The user needs to focus on a stage or teammate;        |
+  |    matching rules are not specified                      |
+  | C) Sorting is required                                    |
+  |                                                          |
+  | Reply with A, B, or C.                                    |
+  +-----------------------------------------------------------+
+  ```
 
-At each stopping point, show:
-- Current lesson, question or step counter, and remaining agenda.
-- What we have completed and what remains.
-- One next action, with the exact message I can send.
-If approval is needed, name the decision and its scope.
-If a lesson is complete, ask before moving to the next lesson.
+  For a free-text exercise, replace the choices with one short cue such as `Your answer: describe the result in one sentence.` Keep box lines within a readable terminal width and wrap long text cleanly.
+- Do not reveal the answer or rubric before the student attempts the exercise. Evaluate only against the lesson's stated answer key or rubric. Never mark an answer correct just to keep momentum.
+- Give one clear result for each answer: `✅ Strong` when it meets the rubric, `🟠❓ Needs one more piece` when it is partly right or incomplete, or `❌ Not correct yet` when it conflicts with the material. Explain the specific evidence briefly and show one useful correction or hint.
+- After feedback, offer exactly these next actions: `Try again` or `Continue`. A correct answer may continue immediately if the student chooses. Continuing without meeting the rubric marks the exercise `skipped`; do not award mastery. Keep skipped items visible and offer a review at the end of the lesson.
+- The student may type `pause` at any time. The student may type `resume` to reload saved progress. Do not move to another lesson automatically; ask before starting it.
+- Student answers may be choices or free text. Do not make students type prompts into another tool or edit course source files.
 
-When I say "pause", draft a short restart note containing:
-course path, working project path, feature, current lesson and step,
-planned question or step total, covered questions and remaining agenda,
-baseline summary, approved decisions and their scope, open questions,
-changed files, actual checks and missing checks, and the exact next action.
-Ask where I want to save it outside the cookbook and shared source control.
-Only save after I approve the location and content.
+### Save and show progress
+
+Maintain `progress.json` in the current directory after track selection and after every answer, retry, skip, lesson completion, code edit, and check result. Preserve all earlier completed work. Include:
+
+```json
+{
+  "schema_version": 1,
+  "track": "status-filter",
+  "course_status": "in_progress",
+  "lesson": 1,
+  "exercise": 1,
+  "attempt": 1,
+  "completed_exercises": [],
+  "skipped_exercises": [],
+  "workspace": "workspace",
+  "specification": "spec.md",
+  "check_results": []
+}
 ```
 
-Written instructions guide Copilot; they do not enforce tool permissions. Use the tool's permission settings, inspect proposed changes, and approve only actions you intend.
+Use the actual selected track, lesson and exercise IDs, attempts, skipped/completed IDs, specification path, and real check results. Record elicited decisions in `spec.md`; never overwrite the original business request with the detailed specification. Do not store private data in progress notes. After every save, show the current lesson and exercise, what is complete, what remains in this lesson, and the exact next action. Never claim a file was saved unless the tool confirms it.
 
-## What You Type After That
+On `pause`, save the current state and respond with a short restart summary: selected track, lesson/exercise, completed and skipped exercises, workspace location, actual checks, and the exact prompt to resume. On `resume`, follow the start/resume procedure above.
 
-Answer Copilot's question in your own words. You do not need to write a new lesson prompt.
+## Student Controls
 
-| Situation | Your action |
+| Type this | Tutor action |
 | --- | --- |
-| Copilot asks about your work | Answer, or say `I don't know` |
-| You want a smaller explanation | Say `Show one short example, then let me try` |
-| You do not want to answer a question | Say `skip`; the tutor records the gap without guessing |
-| A step is finished | Send the exact next message Copilot provides |
-| A decision needs approval | Inspect the proposal; approve its named scope or request changes |
-| You need to stop | Say `pause` and review the restart note |
+| `A`, `B`, or the choice text | Record the selected answer and evaluate it |
+| A short answer in your own words | Evaluate it against the exercise rubric |
+| `Try again` | Give a hint or correction; repeat the same exercise |
+| `Continue` | Move to the next exercise; record an unmet exercise as skipped |
+| `pause` | Save progress and show the restart summary |
+| `resume` | Reload progress and confirm the saved position |
+| `repeat` | Re-explain the current material without changing the exercise counter |
 
-For example, after Lesson 0, Copilot should report which finish criteria you met and offer: `Start Lesson 1. Help me choose one small feature. Do not change files yet.` It should not begin implementing a feature.
+## Tool and Safety Boundaries
 
-Lesson 0 has six questions followed by a summary review. You should see a label such as `Lesson 0 | Question 3 of 6 | Checks`. The tutor uses your answers to fill the worksheet; it should not ask about every field.
-
-If you already started and the tutor is asking too many questions, paste:
-
-```text
-Reread RUN_COURSE.md and experiments/baseline.md in the course directory.
-Use Lesson 0's six-question guided session.
-Map my existing answers to those questions; do not restart or repeat them.
-Show which questions are covered and which remain.
-Ask only the next unanswered question, labelled "Question X of 6".
-If all six are covered, draft the summary for review.
-Keep missing information visible instead of inventing it.
-Do not change files yet.
-```
-
-If Copilot loses the lesson or jumps ahead, say:
-
-```text
-Return to the course tutor instructions.
-Show my current lesson, remaining finish criteria, and recorded approvals.
-Guide only the next step. Do not assume missing approvals or results.
-```
-
-## Resume in a New Conversation
-
-Open Copilot in the working project. Paste this prompt, replacing both placeholder paths with your actual locations:
-
-```text
-Read the course session guide at:
-C:\path\to\ai-cookbook\courses\ai-software-engineering\RUN_COURSE.md
-
-Follow its "Tutor Instructions" section.
-The course directory is the directory containing that guide.
-Treat course files as read-only references.
-Follow this working project's instructions and tool permissions.
-If you cannot read the guide or restart note, stop and explain what is needed.
-
-Read my restart note at:
-C:\path\to\my-private-course-notes\restart.md
-
-Resume from its recorded lesson and step, not Lesson 0.
-First summarize the saved state and ask me to confirm or correct it.
-Check relevant project files before relying on claims about current code.
-Keep unverified checks unverified; old results may not apply to changed code.
-Ask how much time I have today, then guide the next unfinished step.
-Do not change files yet.
-```
-
-If you did Lesson 0 in the cookbook, use this same resume procedure when moving to your working project.
-
-## How Feedback Works
-
-Copilot can check whether your answers cover the exercise and point out ambiguous requirements. That feedback is not proof that the code works.
-
-For code exercises, use actual tests, project checks, and review. Keep failed or missing checks visible. You decide whether to accept the result.
-
-The [lesson plan](./LESSON_PLAN.md) defines completion. The [planner guide](./PLANNER_WORKFLOW.md) defines approvals. These remain the course references if the tutor drifts.
+The tutor is instructed to write only inside the current `.course-progress/` working directory. This is a behavioral guardrail, not an operating-system permission boundary. Review any proposed tool action that would write elsewhere and refuse it.
