@@ -23,11 +23,12 @@ Read the repository's `AGENTS.md`, contribution guide, CI workflow, and any PR p
 
 ## Helper Scripts
 
-The scripts in `scripts/` use the current directory to find the GitHub repo. Run them from inside that repo. On Windows, use Git Bash or WSL. Requirements are Git, `gh`, Python 3, and Bash.
+The scripts in `scripts/` use the current directory to find the GitHub repo. Run them from inside that repo. On Windows, use Git Bash or WSL. Requirements are Git, `gh`, Python 3, and Bash (`pr-update-branch.sh` needs only `gh`).
 
 ```bash
 bash "<skill-folder>/scripts/pr-threads.sh" <PR-number> --open
 bash "<skill-folder>/scripts/pr-ready.sh" <PR-number>
+bash "<skill-folder>/scripts/pr-update-branch.sh" <PR-number>   # or --all
 ```
 
 Replace `<skill-folder>` with this skill's installed folder. Review a script before running it. `pr-reply.sh` posts a GitHub comment, `pr-resolve.sh` resolves review threads, and `pr-cleanup.sh` removes a worktree and local branch; use those only at the matching step in the guides. Cleanup is optional and must not delete unmerged work.
@@ -36,6 +37,7 @@ Replace `<skill-folder>` with this skill's installed folder. Review a script bef
 
 Poll for new review threads **every 30 seconds** while CI is still running, not only after it finishes. When review fixes require a push, cancel only the superseded PR CI runs and push without waiting for their results. Confirm replacement CI starts for the new head and resume polling immediately. Follow the scoped cancellation and readiness steps in [Merge readiness](references/MERGE-READINESS.md).
 
+Check the PR's merge state on every poll and right before every merge: when another PR has merged into the base, this one is `BEHIND` and cannot merge until it is updated. Update it with `pr-update-branch.sh`, then wait for CI on the new tip. See "Keep the Branch Current With Its Base" in [Merge readiness](references/MERGE-READINESS.md).
 A review bot may be invisible in the PR's requested-reviewer list even when it is active. GitHub Copilot, for example, posts as `copilot-pull-request-reviewer` but may never appear in `reviewRequests`. Check the reviews endpoint (`gh api repos/<owner>/<repo>/pulls/<n>/reviews`) before concluding that no bot reviewed.
 
 ## Finishing the PR

@@ -13,7 +13,8 @@
 # Checks, in order:
 #   1. every REAL check-run (not a no-op/neutral placeholder) is successful
 #   2. zero unresolved review threads (paginated — see pr-threads.sh)
-#   3. mergeable == MERGEABLE
+#   3. mergeable == MERGEABLE, and the branch is not BEHIND or in conflict (a
+#      BEHIND branch is updated first through pr-update-branch.sh)
 #
 # One clean run is not enough. The merge-readiness guide requires two clean
 # polls with time between them, including one after CI is green.
@@ -25,6 +26,40 @@ source "$SCRIPT_DIR/_common.sh"
 
 pr=${1:?usage: pr-ready.sh <PR-number>}
 read -r owner name < <(repo_owner_name)
+
+# A PR that is BEHIND its base can never pass the merge gate (even --admin is
+# refused with a misleading "Waiting on code owner review"). Bring it up to date
+# first; the new tip restarts CI, so this poll reports NOT READY.
+merge_state=$(gh pr view "$pr" --json mergeStateStatus --jq .mergeStateStatus) || {
+  echo "NOT READY — cannot read the merge state"; exit 1; }
+# UNKNOWN means GitHub is still computing it. Ask a few times; if it never
+# settles, the state is not known, so the PR is not ready.
+for _ in 1 2 3 4; do
+  [ "$merge_state" = "UNKNOWN" ] || break
+  sleep 5
+  merge_state=$(gh pr view "$pr" --json mergeStateStatus --jq .mergeStateStatus) || {
+    echo "NOT READY — cannot read the merge state"; exit 1; }
+done
+if [ "$merge_state" = "UNKNOWN" ]; then
+  echo "NOT READY — merge state still UNKNOWN (retry later)"
+  exit 1
+fi
+if [ "$merge_state" = "BEHIND" ]; then
+  echo "== branch is BEHIND its base: updating =="
+  # Run it through bash so it works even when the executable bit was lost
+  # (a Windows checkout, a zip copy).
+  if bash "$SCRIPT_DIR/pr-update-branch.sh" "$pr"; then
+    echo "NOT READY — branch was behind and is updated; CI restarts on the new tip (poll again)"
+  else
+    echo "NOT READY — branch is behind and the update FAILED (see above); fix that first"
+  fi
+  exit 1
+fi
+if [ "$merge_state" = "DIRTY" ]; then
+  echo "NOT READY — merge conflict with the base (DIRTY): resolve in the PR worktree, merge the base, push"
+  exit 1
+fi
+
 
 echo "== checks =="
 checks_ok=0
@@ -66,9 +101,15 @@ state_json=$(gh pr view "$pr" --json mergeable,mergeStateStatus,reviewDecision)
 echo "$state_json" | python3 -m json.tool
 mergeable=$(echo "$state_json" | python3 -c "import json,sys; print(json.load(sys.stdin)['mergeable'])")
 review_decision=$(echo "$state_json" | python3 -c "import json,sys; print(json.load(sys.stdin).get('reviewDecision') or '')")
+final_state=$(echo "$state_json" | python3 -c "import json,sys; print(json.load(sys.stdin)['mergeStateStatus'])")
+# The base can move while the checks and threads above are being read, so the
+# verdict re-checks the state: a BEHIND or DIRTY branch is never ready, even if
+# GitHub still says MERGEABLE.
+state_ok=1
+case "$final_state" in BEHIND|DIRTY|UNKNOWN) state_ok=0 ;; esac
 
 echo "== verdict =="
-if [ "$checks_ok" -eq 0 ] && [ "$open_count" -eq 0 ] && [ "$mergeable" = "MERGEABLE" ] && [ "$review_decision" != "REVIEW_REQUIRED" ] && [ "$review_decision" != "CHANGES_REQUESTED" ]; then
+if [ "$checks_ok" -eq 0 ] && [ "$open_count" -eq 0 ] && [ "$mergeable" = "MERGEABLE" ] && [ "$state_ok" -eq 1 ] && [ "$review_decision" != "REVIEW_REQUIRED" ] && [ "$review_decision" != "CHANGES_REQUESTED" ]; then
   echo "READY for this poll. Run a second clean poll at least 30s later, including one after CI is green."
   echo "Then merge with the method this repo allows, e.g.:"
   echo "    gh pr merge $pr --squash --delete-branch"

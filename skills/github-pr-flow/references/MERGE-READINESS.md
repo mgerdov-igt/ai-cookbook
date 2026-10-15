@@ -74,6 +74,40 @@ Confirm the repository's CI triggers will run on the next push or PR synchroniza
 
 After the push, capture the new head commit, confirm replacement CI starts for that commit, and request a new Copilot review if the repository does not request one automatically. Restart the concurrent CI/thread polling loop immediately. A push invalidates earlier readiness polls: only the latest head's checks and reviews can establish readiness.
 
+### Keep the Branch Current With Its Base
+
+Whenever any PR merges into the base branch, every other open PR is **behind** it. A PR that is behind cannot pass the merge gate: its required checks are still "expected" on the old tip. The refusal can be misleading. For example, even an admin merge may fail with a message about a missing code-owner review, when the real cause is the stale branch.
+
+On every poll, and again right before every merge attempt, read the merge state:
+
+```bash
+gh pr view <PR-number> --json mergeStateStatus --jq .mergeStateStatus
+```
+
+| State | Meaning | Action |
+|---|---|---|
+| `BEHIND` | The base has moved on | Update the branch (below), then wait for CI on the new tip |
+| `DIRTY` | Merge conflict with the base | Merge the base in that PR's own worktree, resolve, test, push. Never pick a side in code you do not own; report it if the PR is someone else's |
+| `UNKNOWN` | GitHub is still computing it | Ask again in a few seconds. Do not treat it as up to date |
+| `BLOCKED`, `CLEAN`, others | Not behind | Carry on with the checks |
+
+Update the branch without touching any local checkout:
+
+```bash
+bash "<skill-folder>/scripts/pr-update-branch.sh" <PR-number>   # one PR
+bash "<skill-folder>/scripts/pr-update-branch.sh" --all         # every open PR
+```
+
+Without the script, `gh api -X PUT repos/<owner>/<repo>/pulls/<PR-number>/update-branch` does the same on GitHub. As a last resort, run `git fetch origin && git merge origin/<base>` in the PR's worktree and push.
+
+Rules that go with this:
+
+- **A merge into the base is a trigger.** When you merge one PR while others are in flight, update all of them at once (`--all`). Do the same when you see another PR merge.
+- **A push or an update empties the check list for a short time.** An empty list, or "0 pending", is not green. Wait until the required checks exist and are all complete on the new tip. The merge command stops saying checks are "expected" or "in progress" when they are.
+- **Do not retry a refused merge on the same tip more than twice.** A repeated refusal means the cause is the merge state or a missing check, so read `mergeStateStatus` instead of trying again.
+- **Cancel only superseded CI runs** before an update, as in the section above. The new tip starts CI by itself.
+- Several PRs merging in turn can keep each other behind while CI is slow. Merge the PR whose checks are already green on the current tip first, then update the rest.
+
 ## 4. Check Readiness
 
 Use the helper for one poll:
@@ -82,7 +116,7 @@ Use the helper for one poll:
 bash "<skill-folder>/scripts/pr-ready.sh" <PR-number>
 ```
 
-A PR is ready only when required CI checks pass for the latest head, there are no unresolved review threads, and GitHub reports it can merge. Require two clean polls at least 30 seconds apart for the same head, including one after CI is green. Keep polling for new review threads while CI runs and after it finishes; review bots can post comments later than CI. `pr-ready.sh` checks one snapshot only, so the calling workflow must track elapsed time, head changes, and the two clean polls.
+A PR is ready only when it is not behind or in conflict with its base, required CI checks pass for the latest head, there are no unresolved review threads, and GitHub reports it can merge. Require two clean polls at least 30 seconds apart for the same head, including one after CI is green. Keep polling for new review threads while CI runs and after it finishes; review bots can post comments later than CI. `pr-ready.sh` first updates a behind branch and refuses a conflicting one, then checks one snapshot only, so the calling workflow must track elapsed time, head changes, and the two clean polls.
 
 A missing human approval is handled in §5; it is not something more polling will clear.
 

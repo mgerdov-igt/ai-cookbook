@@ -15,7 +15,7 @@ The scripts find the repository from the current directory. Run them from inside
 - [SKILL.md](./SKILL.md): how to choose and run the PR workflows
 - [Merge readiness](./references/MERGE-READINESS.md): checks and review-thread steps for one PR
 - [Split a large branch](./references/SPLIT-LARGE-BRANCH.md): plan and land a stack of smaller PRs
-- `scripts/`: paginated review-thread tools and safe worktree cleanup
+- `scripts/`: paginated review-thread tools, branch updater, and safe worktree cleanup
 
 ## Use Globally
 
@@ -25,12 +25,13 @@ Review the helper scripts before using them. The cleanup script removes a worktr
 
 ## How a PR Is Driven
 
-Four working rules. The first three save a full CI cycle each time they are followed:
+Five working rules. The first four save a full CI cycle each time they are followed:
 
 1. **Poll review threads every 30 seconds** from the push onward, with a real wait between polls.
 2. **Do not wait for CI to finish.** Review bots re-scan on a schedule independent of CI, so findings arrive mid-run. Work them in parallel.
 3. **Cancel the superseded CI runs and push.** CI restarts on the new commit. Cancel only this PR's own runs, never unrelated branch, deployment, or release runs.
-4. **Finish the merge where you are allowed to.** With CI green and every thread resolved, merge using the repo's allowed method. If a required human approval is missing, the default is to stop and report who must approve — unless the user has authorized an admin bypass and the repo permits one, in which case complete the merge rather than handing back a finished PR. Ask once; do not re-ask on every later PR in the same repo.
+4. **Keep the branch current with its base.** When any PR merges, the others are behind and cannot pass the merge gate (the refusal message can blame a missing review). Check `mergeStateStatus` on every poll and before every merge; update a `BEHIND` branch with `scripts/pr-update-branch.sh` (or `--all`), and wait until the new tip's checks exist and finish. An empty check list is not green.
+5. **Finish the merge where you are allowed to.** With CI green and every thread resolved, merge using the repo's allowed method. If a required human approval is missing, the default is to stop and report who must approve — unless the user has authorized an admin bypass and the repo permits one, in which case complete the merge rather than handing back a finished PR. Ask once; do not re-ask on every later PR in the same repo.
 
 Never approve your own PR. GitHub blocks self-approval at the platform level and no flag changes that.
 
