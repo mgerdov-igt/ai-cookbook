@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+# Use pr-watch.sh as the poll loop: it checks unresolved review threads FIRST,
+# then branch state, then CI, so a wait loop never sits on CI with a thread open.
+# This script is the final readiness check, not the loop.
+#
 # One poll of the merge-readiness checks. Prints a verdict and exits 0
 # (ready for this poll) or 1 (not ready). It does not wait or retry; call
 # it again after time has passed and after CI completes.

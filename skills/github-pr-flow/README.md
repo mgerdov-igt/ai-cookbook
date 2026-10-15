@@ -15,7 +15,7 @@ The scripts find the repository from the current directory. Run them from inside
 - [SKILL.md](./SKILL.md): how to choose and run the PR workflows
 - [Merge readiness](./references/MERGE-READINESS.md): checks and review-thread steps for one PR
 - [Split a large branch](./references/SPLIT-LARGE-BRANCH.md): plan and land a stack of smaller PRs
-- `scripts/`: paginated review-thread tools, branch updater, and safe worktree cleanup
+- `scripts/`: paginated review-thread tools, the poll loop, branch updater, and safe worktree cleanup
 
 ## Use Globally
 
@@ -25,8 +25,9 @@ Review the helper scripts before using them. The cleanup script removes a worktr
 
 ## How a PR Is Driven
 
-Five working rules. The first four save a full CI cycle each time they are followed:
+Six working rules (0 to 5). The first five save a full CI cycle each time they are followed:
 
+0. **The poll loop is `scripts/pr-watch.sh`, not your own loop.** It checks unresolved review threads first, then branch state, then CI, so a PR never waits on CI while a conversation is open.
 1. **Poll review threads every 30 seconds** from the push onward, with a real wait between polls.
 2. **Do not wait for CI to finish.** Review bots re-scan on a schedule independent of CI, so findings arrive mid-run. Work them in parallel.
 3. **Cancel the superseded CI runs and push.** CI restarts on the new commit. Cancel only this PR's own runs, never unrelated branch, deployment, or release runs.

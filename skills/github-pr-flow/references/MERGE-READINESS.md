@@ -108,6 +108,22 @@ Rules that go with this:
 - **Cancel only superseded CI runs** before an update, as in the section above. The new tip starts CI by itself.
 - Several PRs merging in turn can keep each other behind while CI is slow. Merge the PR whose checks are already green on the current tip first, then update the rest.
 
+### The Poll Loop: Threads First, Never CI Alone
+
+Review-bot conversations arrive on their own schedule, in the middle of a CI run. A PR that waits for CI while a thread is open wastes a full CI cycle and hides the finding. Use one poll that checks, in this order:
+
+1. **Unresolved review threads** (paginated). Any open thread: stop. Cancel this PR's in-flight CI runs (never the review bot's own run), then fix, test, reply, resolve and push. Do not wait for CI.
+2. **Branch state**: update a `BEHIND` branch, resolve a `DIRTY` one (see the section above).
+3. **CI on the current tip**: pending, failed, or complete. An empty check list is not green.
+
+```bash
+bash "<skill-folder>/scripts/pr-watch.sh" <PR-number>              # one poll
+bash "<skill-folder>/scripts/pr-watch.sh" --loop <PR-number>       # every 30 seconds, returns when there is something to act on
+bash "<skill-folder>/scripts/pr-watch.sh" --cancel-ci <PR-number>  # cancel this PR's queued or running CI for its current head
+```
+
+The script prints `threads=N` on every line. Exit 10 means threads are open. Never write a wait loop that reads only CI status. Merge only after CI is green and two clean polls at least 30 seconds apart.
+
 ## 4. Check Readiness
 
 Use the helper for one poll:
