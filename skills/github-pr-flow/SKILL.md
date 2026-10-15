@@ -29,11 +29,14 @@ The scripts in `scripts/` use the current directory to find the GitHub repo. Run
 bash "<skill-folder>/scripts/pr-threads.sh" <PR-number> --open
 bash "<skill-folder>/scripts/pr-ready.sh" <PR-number>
 bash "<skill-folder>/scripts/pr-update-branch.sh" <PR-number>   # or --all
+bash "<skill-folder>/scripts/pr-watch.sh" <PR-number>   # the poll loop; or --loop, --cancel-ci
 ```
 
 Replace `<skill-folder>` with this skill's installed folder. Review a script before running it. `pr-reply.sh` posts a GitHub comment, `pr-resolve.sh` resolves review threads, and `pr-cleanup.sh` removes a worktree and local branch; use those only at the matching step in the guides. Cleanup is optional and must not delete unmerged work.
 
 `pr-cleanup.sh` also folds the merged default branch back into the parent tree it's run from. If that parent tree is dirty, it does not just refuse and stop — it checks each dirty file against the newly-merged default branch (content-for-content, ignoring whitespace). A file that's a confirmed-stale duplicate of what's already on the default branch gets reset away; a file that is not found there is reported by name and left untouched, since it may be unique work that never shipped. Read the script's own header comment for the exact behavior before relying on it.
+
+**Never wait on CI alone.** Use `scripts/pr-watch.sh <PR-number>` (or `--loop`) as the poll loop. It checks unresolved review threads first, then branch state, then CI, and prints `threads=N` on every line. When it exits 10, a thread is open: cancel this PR's in-flight CI (`--cancel-ci`) and resolve the thread before anything else. A wait loop that reads only CI status leaves a PR sitting on CI with open review conversations.
 
 Poll for new review threads **every 30 seconds** while CI is still running, not only after it finishes. When review fixes require a push, cancel only the superseded PR CI runs and push without waiting for their results. Confirm replacement CI starts for the new head and resume polling immediately. Follow the scoped cancellation and readiness steps in [Merge readiness](references/MERGE-READINESS.md).
 
