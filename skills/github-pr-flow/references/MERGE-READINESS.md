@@ -78,18 +78,20 @@ After the push, capture the new head commit, confirm replacement CI starts for t
 
 Whenever any PR merges into the base branch, every other open PR is **behind** it. A PR that is behind cannot pass the merge gate: its required checks are still "expected" on the old tip. The refusal can be misleading. For example, even an admin merge may fail with a message about a missing code-owner review, when the real cause is the stale branch.
 
-On every poll, and again right before every merge attempt, read the merge state:
+On every poll, and again right before every merge attempt, check ancestry and read the merge state. `mergeStateStatus` is a merge-gate aggregate, not proof of ancestry: a stale branch can report `BLOCKED` or `CLEAN` instead of `BEHIND`. Use the compare API for ancestry:
 
 ```bash
+bash "<skill-folder>/scripts/pr-update-branch.sh" <PR-number> --behind-by   # 0 = current; >0 = behind
+# raw: gh api repos/<owner>/<repo>/compare/<base>...<head> --jq .behind_by
 gh pr view <PR-number> --json mergeStateStatus --jq .mergeStateStatus
 ```
 
 | State | Meaning | Action |
 |---|---|---|
-| `BEHIND` | The base has moved on | Update the branch (below), then wait for CI on the new tip |
+| behind-by > 0 (any state, often `BEHIND`) | The base has moved on | Update the branch (below), then wait for CI on the new tip |
 | `DIRTY` | Merge conflict with the base | Merge the base in that PR's own worktree, resolve, test, push. Never pick a side in code you do not own; report it if the PR is someone else's |
 | `UNKNOWN` | GitHub is still computing it | Ask again in a few seconds. Do not treat it as up to date |
-| `BLOCKED`, `CLEAN`, others | Not behind | Carry on with the checks |
+| behind-by 0, any other state | Current. `BLOCKED` here is the normal review-required gate, which an authorized `--admin` merge bypasses | Carry on with the checks |
 
 Update the branch without touching any local checkout:
 
@@ -123,6 +125,15 @@ bash "<skill-folder>/scripts/pr-watch.sh" --cancel-ci <PR-number>  # cancel this
 ```
 
 The script prints `threads=N` on every line. Exit 10 means threads are open. Never write a wait loop that reads only CI status. Merge only after CI is green and two clean polls at least 30 seconds apart.
+
+### Round Limit: Park, Do Not Chase
+
+Review bots keep finding things. A PR that fixes every finding can stay open for hours and grow with each fix. Set a limit: **the fifth review is the last one that is acted on by parking**. A round is one submitted review by the review bot. `scripts/pr-watch.sh` counts rounds and prints `round=N/5` on the thread lines; `PR_ROUND_LIMIT` changes the limit.
+
+- **Reviews 1 to 4 (exit 10):** fix, test, reply, resolve and push, as above. Cancel in-flight CI first.
+- **From the fifth review on, with threads open (exit 16, PARK):** do not fix them, do not start another round, and do not cancel CI. For each thread, in this order: add an entry to a known-issues file in the repo's backlog folder (thread link, file, the finding, the failure scenario, severity, a suggested fix); push that one documentation commit (CI restarts on it); reply on the thread with the link to the entry; resolve the thread. List the parked items in the PR description under "Known issues (parked after N review rounds)" and say which of them touch money, security or data.
+- **Merge** when CI is green on the final tip (the one with the backlog commit), the branch is current, and two clean polls (zero open threads) 30 seconds apart are in. If CI is red, fix only what CI needs.
+- The parked entries are the backlog. A later step or a dedicated cleanup PR works them off.
 
 ## 4. Check Readiness
 

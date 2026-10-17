@@ -6,6 +6,7 @@
 #   tools/pr-review/pr-update-branch.sh <pr-number>   # one PR
 #   tools/pr-review/pr-update-branch.sh --all         # every open PR
 #   tools/pr-review/pr-update-branch.sh <pr> --check  # only report, change nothing
+#   tools/pr-review/pr-update-branch.sh <pr> --behind-by  # print how many base commits the head lacks
 #
 # Call it (a) right after you push, (b) in every 30-second poll loop, and
 # (c) whenever any PR merges into the base. Safe to call repeatedly: it does
@@ -26,12 +27,16 @@
 # Needs only `gh` (no python).
 set -uo pipefail
 
-usage() { sed -n '2,26p' "$0" | sed 's/^# \{0,1\}//'; exit 1; }
+usage() { sed -n '2,27p' "$0" | sed 's/^# \{0,1\}//'; exit 1; }
 command -v gh >/dev/null 2>&1 || { echo "gh is required" >&2; exit 1; }
 [ $# -ge 1 ] || usage
 
 check_only=0
-for a in "$@"; do [ "$a" = "--check" ] && check_only=1; done
+behind_only=0
+for a in "$@"; do
+  [ "$a" = "--check" ] && check_only=1
+  [ "$a" = "--behind-by" ] && behind_only=1
+done
 
 repo="$(gh repo view --json nameWithOwner --jq .nameWithOwner)" \
   || { echo "cannot read the repository with gh" >&2; exit 1; }
@@ -39,6 +44,20 @@ repo="$(gh repo view --json nameWithOwner --jq .nameWithOwner)" \
 # Prints "<STATE> <mergeStateStatus>" or fails.
 pr_state() {
   gh pr view "$1" --json state,mergeStateStatus --jq '.state+" "+.mergeStateStatus'
+}
+
+# Number of base commits the PR head lacks, from the compare API. This is the
+# real ancestry test: mergeStateStatus is a merge-gate aggregate (BLOCKED or
+# CLEAN can both hide a stale branch), so it is only a hint. Fails (non-zero)
+# when the answer cannot be read; callers must not treat that as "current".
+pr_behind_by() {
+  local base head
+  base="$(gh pr view "$1" --json baseRefName --jq .baseRefName)" || return 1
+  head="$(gh pr view "$1" --json headRefOid --jq .headRefOid)" || return 1
+  # A base name may hold characters that break a URL path (release#2026 turns
+  # into a fragment); percent-encode the ones that matter. The head is a SHA.
+  base="${base//%/%25}"; base="${base//#/%23}"; base="${base//\?/%3F}"
+  gh api "repos/$repo/compare/${base}...${head}" --jq .behind_by
 }
 
 # Returns 0 ok, 1 API error, 2 conflict. Do not call it on the left of `||`:
@@ -65,10 +84,13 @@ update_one() {
     DIRTY)
       echo "#$pr: DIRTY (merge conflict with the base). Resolve by hand in the PR's own worktree: git fetch origin && git merge origin/<base>" >&2
       return 2 ;;
-    BEHIND) ;;
-    *) echo "#$pr: ${state#OPEN } (not behind), nothing to do"; return 0 ;;
   esac
-  if [ "$check_only" = 1 ]; then echo "#$pr: BEHIND (check only)"; return 0; fi
+  # Ancestry, not mergeStateStatus, decides whether the branch is behind.
+  local behind
+  behind="$(pr_behind_by "$pr")" || { echo "#$pr: cannot compare head with base" >&2; return 1; }
+  if [ "$behind_only" = 1 ]; then echo "$behind"; return 0; fi
+  if [ "$behind" = "0" ]; then echo "#$pr: ${state#OPEN } (not behind: 0 base commits missing), nothing to do"; return 0; fi
+  if [ "$check_only" = 1 ]; then echo "#$pr: BEHIND by $behind commit(s) (check only)"; return 0; fi
 
   head="$(gh pr view "$pr" --json headRefOid --jq .headRefOid)" \
     || { echo "#$pr: cannot read the head commit" >&2; return 1; }

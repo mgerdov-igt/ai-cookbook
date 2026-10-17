@@ -48,8 +48,12 @@ if [ "$merge_state" = "UNKNOWN" ]; then
   echo "NOT READY — merge state still UNKNOWN (retry later)"
   exit 1
 fi
-if [ "$merge_state" = "BEHIND" ]; then
-  echo "== branch is BEHIND its base: updating =="
+# Ancestry comes from the compare API, not from mergeStateStatus (which is a
+# merge-gate aggregate: BLOCKED or CLEAN can both hide a stale branch).
+behind_by=$(bash "$SCRIPT_DIR/pr-update-branch.sh" "$pr" --behind-by) || {
+  echo "NOT READY — cannot compare the branch with its base"; exit 1; }
+if [ "$behind_by" != "0" ]; then
+  echo "== branch is $behind_by commit(s) behind its base: updating =="
   # Run it through bash so it works even when the executable bit was lost
   # (a Windows checkout, a zip copy).
   if bash "$SCRIPT_DIR/pr-update-branch.sh" "$pr"; then
@@ -63,6 +67,12 @@ if [ "$merge_state" = "DIRTY" ]; then
   echo "NOT READY — merge conflict with the base (DIRTY): resolve in the PR worktree, merge the base, push"
   exit 1
 fi
+
+# Pin the head the checks belong to; re-read it at the verdict so a push or
+# branch update by another poller in between cannot pair old-tip checks with a
+# new tip.
+head_before=$(gh pr view "$pr" --json headRefOid --jq .headRefOid) || {
+  echo "NOT READY — cannot read the head commit"; exit 1; }
 
 
 echo "== checks =="
@@ -111,6 +121,10 @@ final_state=$(echo "$state_json" | python3 -c "import json,sys; print(json.load(
 # GitHub still says MERGEABLE.
 state_ok=1
 case "$final_state" in BEHIND|DIRTY|UNKNOWN) state_ok=0 ;; esac
+final_behind=$(bash "$SCRIPT_DIR/pr-update-branch.sh" "$pr" --behind-by) || final_behind=unknown
+[ "$final_behind" = "0" ] || state_ok=0
+head_after=$(gh pr view "$pr" --json headRefOid --jq .headRefOid) || head_after=unknown
+[ "$head_after" = "$head_before" ] || { state_ok=0; echo "  head moved during the poll ($head_before -> $head_after)"; }
 
 echo "== verdict =="
 if [ "$checks_ok" -eq 0 ] && [ "$open_count" -eq 0 ] && [ "$mergeable" = "MERGEABLE" ] && [ "$state_ok" -eq 1 ] && [ "$review_decision" != "REVIEW_REQUIRED" ] && [ "$review_decision" != "CHANGES_REQUESTED" ]; then
