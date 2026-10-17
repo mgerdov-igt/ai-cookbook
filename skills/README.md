@@ -13,6 +13,7 @@ Keep `SKILL.md` focused on the task, not one AI tool. Avoid tool-specific slash 
 Copy the whole skill folder to the personal skills folder used by your AI tool. The path varies by tool. For example:
 
 - Claude Code: `~/.claude/skills/<skill-name>/`
+- GitHub Copilot (VS Code and CLI): `~/.copilot/skills/<skill-name>/`
 - OpenCode: `~/.config/opencode/skills/<skill-name>/` or `~/.agents/skills/<skill-name>/`
 
 For any other compatible tool, check its docs for the global skills folder and how to reload skills. Restart or reload the tool after installing. If a tool does not support Agent Skills, adapt only the wrapper; keep the shared instructions and scripts unchanged where possible.
@@ -27,6 +28,19 @@ Copy-Item -Recurse -Path $skill -Destination $personalSkills
 ```
 
 Change `$personalSkills` to the global skills folder for your AI tool.
+
+### Install Plan Auto-Work for Copilot
+
+From the cookbook root, run:
+
+```powershell
+$personalSkills = "$HOME\.copilot\skills"
+New-Item -ItemType Directory -Force -Path $personalSkills | Out-Null
+Copy-Item -Recurse -Force -Path "skills\plan-auto-work" -Destination $personalSkills
+Test-Path "$personalSkills\plan-auto-work\SKILL.md"
+```
+
+Verification should return `True`. Reload VS Code or start a new Copilot CLI session, then ask: "Use plan-auto-work to implement the approved plan at docs/plan.md." In VS Code, you can also use `/plan-auto-work` with the plan path. If discovery fails, check the home-folder path and the host's skill settings. See [VS Code Agent Skills](https://code.visualstudio.com/docs/copilot/customization/agent-skills) and [Copilot CLI skills](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/create-skills).
 
 ## What skills are best for
 
@@ -111,6 +125,7 @@ Before running any skill, verify:
 | [github-pr-flow](./github-pr-flow/SKILL.md) | Windows, macOS, Linux | Git, `gh`, Bash, Python 3 | PR readiness verdict or ordered PR-splitting workflow |
 | [repository-cleanup](./repository-cleanup/SKILL.md) | Any repository and supported OS | Repository instructions and local verification tools | Approved cleanup proposal, then verified change report |
 | [flutter-upgrade](./flutter-upgrade/SKILL.md) | Flutter/Dart projects | Flutter/Dart toolchain, package manager, repository CI guidance | Upgrade plan and verification report |
+| [plan-auto-work](./plan-auto-work/SKILL.md) | Any repository and supported OS | Approved plan and repository verification tools | Implemented plan, verified work, and parked-step report |
 
 ## Quick decision table
 
@@ -122,6 +137,7 @@ Before running any skill, verify:
 | Prepare or split GitHub PRs | [github-pr-flow](./github-pr-flow/SKILL.md) | "Check this PR for merge readiness" | Running cleanup before verifying the PR merged |
 | Plan or perform repository cleanup | [repository-cleanup](./repository-cleanup/SKILL.md) | "Propose a safe cleanup pass" | Deleting ignored files without inspecting them |
 | Upgrade Flutter, Dart, or pub packages | [flutter-upgrade](./flutter-upgrade/SKILL.md) | "Plan a safe Flutter SDK upgrade" | Updating only the obvious SDK pin or sharing credentials in logs |
+| Implement an approved plan autonomously | [plan-auto-work](./plan-auto-work/SKILL.md) | "Implement the plan end to end" | Starting without an approved plan or silently changing models |
 | Browser page screenshot | Browser screenshot tool | "Screenshot this web page in the browser" | Do not use `windows-screenshot` for browser pages |
 
 ## Reusable skill template
@@ -150,6 +166,7 @@ This saves setup time and keeps the skill's tested requests, results, and safety
 - [GitHub PR flow](./github-pr-flow/SKILL.md)
 - [Repository cleanup](./repository-cleanup/SKILL.md)
 - [Flutter and Dart upgrade](./flutter-upgrade/SKILL.md)
+- [Plan auto-work](./plan-auto-work/SKILL.md)
 
 ## Example 1: Copilot quota forecast
 
