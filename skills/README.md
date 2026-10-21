@@ -123,6 +123,7 @@ Before running any skill, verify:
 | [windows-screenshot](./windows-screenshot/SKILL.md) | Windows | desktop app window | Final stdout line is PNG path |
 | [android-screenshot](./android-screenshot/SKILL.md) | Android device/emulator + Windows host | `adb`, connected device | Final stdout line is PNG path |
 | [github-pr-flow](./github-pr-flow/SKILL.md) | Windows, macOS, Linux | Git, `gh`, Bash, Python 3 | PR readiness verdict or ordered PR-splitting workflow |
+| [pr-to-main](./pr-to-main/SKILL.md) | Any git repo with a GitHub remote | Git, `gh`, Bash, Python 3, a background-agent tool | Pending work landed on the default branch via a PR, from a separate worktree |
 | [repository-cleanup](./repository-cleanup/SKILL.md) | Any repository and supported OS | Repository instructions and local verification tools | Approved cleanup proposal, then verified change report |
 | [flutter-upgrade](./flutter-upgrade/SKILL.md) | Flutter/Dart projects | Flutter/Dart toolchain, package manager, repository CI guidance | Upgrade plan and verification report |
 | [plan-auto-work](./plan-auto-work/SKILL.md) | Any repository and supported OS | Approved plan and repository verification tools | Implemented plan, verified work, and parked-step report |

@@ -28,8 +28,10 @@
 #   0   CLEAN      no open threads, not behind, every required check exists and
 #                  passed on the current tip. This is ONE clean poll. A merge needs
 #                  two such polls at least 30 seconds apart.
+#   17  TIMEOUT    --loop only: nothing to act on yet and PR_WATCH_MAX_SECS (default 540,
+#                  under the usual 10-minute tool limit) elapsed. Call --loop again.
 #   16  PARK       review threads are open at or after the round limit (PR_ROUND_LIMIT bot
-#                  reviews, default 5). Do NOT fix them and do NOT cancel CI: document each as a known issue
+#                  reviews, default 4). Do NOT fix them and do NOT cancel CI: document each as a known issue
 #                  (docs/backlog/<topic>-known-issues.md), push that one doc commit, reply with the link, resolve
 #                  the thread, then merge on green CI after two clean polls. A PR that
 #                  never converges is merged with its findings parked, not held forever.
@@ -39,20 +41,30 @@
 #   pr-watch.sh --cancel-ci <pr>   cancel queued/running CI runs for the PR's current
 #                                  head commit. Never touches other branches' runs
 #                                  or the review bot's own run.
-#   pr-watch.sh --loop <pr>        poll every 30s and print one line per poll until
-#                                  the exit code is not 14/11/15 (i.e. until there is
-#                                  something to act on). Cancels stale CI by itself
-#                                  when threads appear, then returns 10.
+#   pr-watch.sh --loop <pr>        poll every 30s until there is something to act on.
+#                                  Prints a line only when the status CHANGES (a quiet
+#                                  wait costs almost no tokens). Cancels stale CI by
+#                                  itself when threads appear, then returns 10. Returns
+#                                  17 after PR_WATCH_MAX_SECS so the caller's tool call
+#                                  never times out: just call it again.
 #
-# Poll loop for a caller that wants its own cadence:
-#   while :; do tools/pr-review/pr-watch.sh <pr>; rc=$?; [ $rc -ne 14 ] && [ $rc -ne 11 ] && [ $rc -ne 15 ] && break; sleep 30; done
+# CLEAN also requires that the review bot has looked at the current tip, or that
+# PR_BOT_WAIT_SECS (default 600; 0 disables) have passed since the tip was committed.
+# Without this a fast CI can report CLEAN before the bot has posted its first review.
 #
 # Needs only `gh` (no python).
 set -uo pipefail
 
 # Round limit (see exit code 16). A round is one submitted review by the review bot.
-ROUND_LIMIT="${PR_ROUND_LIMIT:-5}"
+ROUND_LIMIT="${PR_ROUND_LIMIT:-4}"
 REVIEW_BOT="${PR_REVIEW_BOT:-copilot-pull-request-reviewer}"
+BOT_WAIT_SECS="${PR_BOT_WAIT_SECS:-600}"
+
+_REPO_NWO=""
+repo_nwo() {
+  [ -n "$_REPO_NWO" ] || _REPO_NWO="$(gh repo view --json nameWithOwner --jq .nameWithOwner)" || return 1
+  printf '%s\n' "$_REPO_NWO"
+}
 
 command -v gh >/dev/null 2>&1 || { echo "gh is required" >&2; exit 1; }
 
@@ -79,7 +91,7 @@ cancel_ci() {
 
 unresolved_count() {
   local pr="$1" repo owner name cursor out total=0 page
-  repo="$(gh repo view --json nameWithOwner --jq .nameWithOwner)" || return 1
+  repo="$(repo_nwo)" || return 1
   owner="${repo%%/*}"; name="${repo##*/}"
   cursor=""
   while :; do
@@ -117,7 +129,7 @@ ci_snapshot() {
 # review is one round. The bot login can be overridden with PR_REVIEW_BOT.
 review_rounds() {
   local pr="$1" repo bot out
-  repo="$(gh repo view --json nameWithOwner --jq .nameWithOwner)" || return 1
+  repo="$(repo_nwo)" || return 1
   # The bot login is compared literally (not as a pattern), case-insensitively,
   # and with the optional "[bot]" suffix ignored on both sides, so an override
   # such as renovate[bot] or renovate both match.
@@ -127,6 +139,25 @@ review_rounds() {
   out="$(gh api --paginate "repos/$repo/pulls/$pr/reviews" \
     --jq "[.[]|select((.user.login|ascii_downcase|rtrimstr(\"[bot]\")) == \"$bot\")]|length")" || return 1
   printf '%s\n' "$out" | awk '{n+=$1} END{print n+0}'
+}
+
+# Prints nothing and returns 0 when the review bot has reviewed commit $2, or when
+# the tip is older than BOT_WAIT_SECS (the bot is not coming). Otherwise prints
+# the tip's age in seconds and returns 1.
+bot_pending() {
+  local pr="$1" head="$2" repo bot out n age
+  [ "$BOT_WAIT_SECS" -gt 0 ] 2>/dev/null || return 0
+  repo="$(repo_nwo)" || return 0
+  bot="$(printf '%s' "$REVIEW_BOT" | tr 'A-Z' 'a-z' | sed 's/\[bot\]$//')"
+  out="$(gh api --paginate "repos/$repo/pulls/$pr/reviews" \
+    --jq "[.[]|select((.user.login|ascii_downcase|rtrimstr(\"[bot]\")) == \"$bot\" and .commit_id == \"$head\")]|length")" || return 0
+  n="$(printf '%s\n' "$out" | awk '{n+=$1} END{print n+0}')"
+  [ "$n" -gt 0 ] && return 0
+  age="$(gh api "repos/$repo/commits/$head" --jq '(now - (.commit.committer.date|fromdate))|floor')" || return 0
+  case "$age" in ""|*[!0-9]*) return 0 ;; esac
+  [ "$age" -ge "$BOT_WAIT_SECS" ] && return 0
+  echo "$age"
+  return 1
 }
 
 poll() {
@@ -213,7 +244,11 @@ poll() {
   if [ "$head2" != "$head1" ]; then
     echo "#$pr threads=0 -> CI_PENDING (the head moved to ${head2:0:8} during the poll)"; return 14
   fi
-  echo "#$pr threads=0 checks=$n required=$req_n pending=0 failed=0 head=${head1:0:8} -> CLEAN (one clean poll; need two, 30s apart; confirm the merge command does not say checks are expected)"
+  local bot_age
+  if ! bot_age="$(bot_pending "$pr" "$head1")"; then
+    echo "#$pr threads=0 -> CI_PENDING (review bot has not reviewed ${head1:0:8} yet; tip is ${bot_age}s old, waiting up to ${BOT_WAIT_SECS}s)"; return 14
+  fi
+  echo "#$pr threads=0 checks=$n required=$req_n pending=0 failed=0 head=${head1:0:8} -> CLEAN (one clean poll; need two, 30s apart; use pr-merge.sh)"
   return 0
 }
 
@@ -221,12 +256,19 @@ case "${1:-}" in
   --cancel-ci) [ $# -eq 2 ] || { echo "usage: pr-watch.sh --cancel-ci <pr>" >&2; exit 1; }; cancel_ci "$2"; exit $? ;;
   --loop)
     [ $# -eq 2 ] || { echo "usage: pr-watch.sh --loop <pr>" >&2; exit 1; }
+    deadline=$(( $(date +%s) + ${PR_WATCH_MAX_SECS:-540} )); last=""
     while :; do
-      poll "$2"; rc=$?
+      out="$(poll "$2")"; rc=$?
+      if [ "$out" != "$last" ] && [ -n "$out" ]; then printf '%s\n' "$out"; last="$out"; fi
       if [ "$rc" -eq 10 ]; then cancel_ci "$2"; exit 10; fi
       # PARK keeps CI running: the park commit (backlog entries) restarts it on the final tip.
       if [ "$rc" -eq 16 ]; then exit 16; fi
-      case "$rc" in 14|11|15) sleep 30 ;; *) exit "$rc" ;; esac
+      case "$rc" in
+        14|11|15)
+          if [ "$(date +%s)" -ge "$deadline" ]; then echo "#$2 still waiting -> TIMEOUT: call --loop again"; exit 17; fi
+          sleep 30 ;;
+        *) exit "$rc" ;;
+      esac
     done ;;
   ""|-*) echo "usage: pr-watch.sh <pr> | --cancel-ci <pr> | --loop <pr>" >&2; exit 1 ;;
   *) poll "$1"; exit $? ;;

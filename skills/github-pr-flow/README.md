@@ -1,40 +1,47 @@
 # GitHub PR Flow Skill
 
-This folder contains a tool-neutral skill and helper scripts for GitHub pull requests.
+Tool-neutral skill and helper scripts for GitHub pull requests. **This folder is the canonical source** of the PR scripts: copies in other repos and in personal skill folders are generated from it with `sync.sh`.
 
 ## Requirements
 
-- Git
-- GitHub CLI (`gh`), signed in with permission to read and update the PR
-- Bash and Python 3 for the helper scripts (Git Bash or WSL on Windows)
-
-The scripts find the repository from the current directory. Run them from inside the repo. They do not contain a fixed owner or repo name.
+Git, `gh` (signed in), Bash and Python 3 (Git Bash or WSL on Windows). Scripts find the repo from the current directory; nothing is hardcoded.
 
 ## Files
 
-- [SKILL.md](./SKILL.md): how to choose and run the PR workflows
-- [Merge readiness](./references/MERGE-READINESS.md): checks and review-thread steps for one PR
-- [Split a large branch](./references/SPLIT-LARGE-BRANCH.md): plan and land a stack of smaller PRs
-- `scripts/`: paginated review-thread tools, the poll loop, branch updater, and safe worktree cleanup
+- [SKILL.md](./SKILL.md): rules and script table
+- [Merge readiness](./references/MERGE-READINESS.md): the loop, thread handling, round limit, merge
+- [Split a large branch](./references/SPLIT-LARGE-BRANCH.md)
+- `scripts/`: `pr-watch.sh` (poll loop), `pr-threads.sh`, `pr-reply.sh`, `pr-resolve.sh`, `pr-merge.sh`, `pr-update-branch.sh`, `pr-cleanup.sh`, `pr-ready.sh`
+- `sync.sh`: keeps every copy identical to this folder
 
-## Use Globally
+Companion skill [pr-to-main](../pr-to-main/SKILL.md) ships pending work end to end from a separate worktree.
 
-Install this whole `github-pr-flow/` folder in a personal skills directory supported by your AI tool. Keep `SKILL.md`, `references/`, and `scripts/` together. See the top-level [Skills guide](../README.md) for examples of global skill locations.
+## How a PR is driven
 
-Review the helper scripts before using them. The cleanup script removes a worktree and local branch; run it only after the PR is merged and its work is safe to remove.
+1. Open the PR, request the review bot at once, self-review the diff before the first push.
+2. `pr-watch.sh --loop <n>`: threads first, then branch state, then CI. Quiet until there is something to act on; exit 17 only means "call it again".
+3. Exit 10: `pr-threads.sh <n> --text`, fix everything, push once, reply and resolve.
+4. The 4th bot review is parked in a backlog doc, not fixed (`PR_ROUND_LIMIT`, default 4); exit 16.
+5. `pr-merge.sh <n>` (add `--admin` only where the user authorized the bypass): two clean polls, merge, verify.
+6. `pr-cleanup.sh <worktree> <branch>` after the merge.
 
-## How a PR Is Driven
+Never approve your own PR. `--admin` uses rights the account already has; it fails harmlessly otherwise.
 
-Seven working rules (0 to 6). The first six save a full CI cycle each time they are followed:
+## Tuning (environment variables)
 
-0. **The poll loop is `scripts/pr-watch.sh`, not your own loop.** It checks unresolved review threads first, then branch state, then CI, so a PR never waits on CI while a conversation is open.
-0b. **Round limit: the fifth review is parked, not fixed.** Reviews 1 to 4 are fixed. From the fifth, open threads are recorded as known issues in the backlog (one doc commit pushed, CI not cancelled), replied to with the link, resolved, and the PR merges on green CI (`scripts/pr-watch.sh` exits 16, PARK).
-1. **Poll review threads every 30 seconds** from the push onward, with a real wait between polls.
-2. **Do not wait for CI to finish.** Review bots re-scan on a schedule independent of CI, so findings arrive mid-run. Work them in parallel.
-3. **Cancel the superseded CI runs and push.** CI restarts on the new commit. Cancel only this PR's own runs, never unrelated branch, deployment, or release runs.
-4. **Keep the branch current with its base.** When any PR merges, the others are behind and cannot pass the merge gate (the refusal message can blame a missing review). Check ancestry with `scripts/pr-update-branch.sh <PR> --behind-by` (not only `mergeStateStatus`, which can show `BLOCKED` or `CLEAN` on a stale branch) on every poll and before every merge; update a behind branch with `scripts/pr-update-branch.sh` (or `--all`), and wait until the new tip's checks exist and finish. An empty check list is not green.
-5. **Finish the merge where you are allowed to.** With CI green and every thread resolved, merge using the repo's allowed method. If a required human approval is missing, the default is to stop and report who must approve — unless the user has authorized an admin bypass and the repo permits one, in which case complete the merge rather than handing back a finished PR. Ask once; do not re-ask on every later PR in the same repo.
+| Variable | Default | Meaning |
+|---|---|---|
+| `PR_ROUND_LIMIT` | 4 | the Nth bot review with open threads is parked |
+| `PR_REVIEW_BOT` | `copilot-pull-request-reviewer` | login of the review bot |
+| `PR_BOT_WAIT_SECS` | 600 | how long after a push CLEAN waits for the bot to review the tip (0 disables) |
+| `PR_WATCH_MAX_SECS` | 540 | `--loop` returns 17 after this long |
+| `PR_MERGE_GAP_SECS` | 30 | gap between the two clean polls of `pr-merge.sh` |
 
-Never approve your own PR. GitHub blocks self-approval at the platform level and no flag changes that.
+## Keeping copies in sync
 
-Note: `--admin` is optional and environment-dependent. It grants no new rights; it invokes rights the account already holds, and fails harmlessly when it has none. A `write` permission level does not prove it will fail, because a ruleset bypass is granted separately from that level. Details in [Merge readiness](./references/MERGE-READINESS.md) §5.
+```bash
+bash sync.sh --check --repo <path-to-repo> --global   # report drift
+bash sync.sh --apply --repo <path-to-repo> --global   # copy; --repo may repeat
+```
+
+`--repo` updates `<repo>/tools/pr-review/*.sh`; `--global` installs this skill and `pr-to-main` into `~/.claude/skills` and `~/.copilot/skills`. Review the scripts before running them: `pr-cleanup.sh` removes a worktree and local branch, and never deletes unmerged work.

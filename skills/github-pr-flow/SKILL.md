@@ -5,60 +5,38 @@ description: Help make a GitHub pull request ready to merge, or split a large br
 
 # GitHub Pull Request Flow
 
-Use this skill to prepare a pull request (PR) for review, clear review comments, check that it can merge, or split a large branch into smaller PRs.
+- One PR already exists: follow [Merge readiness](references/MERGE-READINESS.md).
+- A large branch needs several PRs: follow [Split a large branch](references/SPLIT-LARGE-BRANCH.md).
 
-## Choose a Guide
+Read the repo's `AGENTS.md`, contribution guide, CI workflow and any PR playbook first. Its test commands, protected files, required reviewers and merge rules win over this skill.
 
-- One PR already exists: use [Merge readiness](references/MERGE-READINESS.md).
-- A large branch needs several PRs: use [Split a large branch](references/SPLIT-LARGE-BRANCH.md).
+## Rules
 
-Read the repository's `AGENTS.md`, contribution guide, CI workflow, and any PR playbooks first. Use that repository's test commands, protected-file list, required reviewers, and merge rules. Do not assume they match this cookbook.
+- Never switch branches, force-push or discard changes in the user's current worktree while a PR is in flight. Work in a separate worktree (see the `pr-to-main` skill, or the snapshot steps in the split guide). Do not use `git stash push` to move the user's changes.
+- Never approve your own PR (GitHub blocks it). Never merge without the CI-green and zero-open-threads bar; `--admin` skips an approval gate only where the user authorized it.
+- Use the scripts, not hand-written `gh`/GraphQL: they paginate, print both id spaces, and encode the polling rules.
 
-## Protect the Active Worktree
+## Scripts
 
-- Do not switch branches, force-push, or discard changes in the user's current worktree while the PR is in flight.
-- Do not use `git stash push` to move the user's changes. If pending local work must be copied to another worktree, use the separate-worktree snapshot steps in [Split a large branch](references/SPLIT-LARGE-BRANCH.md).
-- Before merging updates into a worktree, confirm it is clean. Stop if it is dirty or a merge has conflicts; do not resolve the user's work by guessing.
-- The one exception is the post-merge cleanup step (`pr-cleanup.sh`): once a PR has actually merged, a dirty parent tree there is routinely just a stale pre-merge duplicate of what's already landed (the snapshot approach above never commits in the parent, only copies from it). That script verifies every dirty file against the merged default branch before resetting anything, and never discards a file it can't confirm is already shipped — see the script's own header comment.
+Run from inside the repo: `bash "<skill-folder>/scripts/<name>"`. On Windows use Git Bash (not WSL). Need `gh` and Python 3 (`pr-watch.sh`, `pr-update-branch.sh` need only `gh`).
 
-## Helper Scripts
+| Script | Use |
+|---|---|
+| `pr-watch.sh --loop <n>` | The only wait loop. Threads first, then branch state, then CI; quiet until something needs action; exit 10 = threads open, 16 = park, 17 = call again. |
+| `pr-threads.sh <n> --text` | Open threads with ids and full text, one call. |
+| `pr-reply.sh`, `pr-resolve.sh` | Reply (REST comment id) then resolve (GraphQL thread id). |
+| `pr-merge.sh <n> [--admin]` | Two clean polls, merge, verify MERGED. |
+| `pr-update-branch.sh <n>` or `--all` | Bring a BEHIND branch up to date (API, no checkout). |
+| `pr-cleanup.sh <worktree> <branch>` | After merge: remove the worktree, delete the branch, fold the default branch into the parent tree. Never discards a file it cannot prove is already merged. |
+| `pr-ready.sh <n>` | One-shot readiness check (not part of the normal flow). |
 
-The scripts in `scripts/` use the current directory to find the GitHub repo. Run them from inside that repo. On Windows, use Git Bash or WSL. Requirements are Git, `gh`, Python 3, and Bash (`pr-update-branch.sh` needs only `gh`).
+Each script's header comment is its usage doc.
 
-```bash
-bash "<skill-folder>/scripts/pr-threads.sh" <PR-number> --open
-bash "<skill-folder>/scripts/pr-ready.sh" <PR-number>
-bash "<skill-folder>/scripts/pr-update-branch.sh" <PR-number>   # or --all
-bash "<skill-folder>/scripts/pr-watch.sh" <PR-number>   # the poll loop; or --loop, --cancel-ci
-```
+## Efficiency rules (each saves a CI cycle or many tokens)
 
-Replace `<skill-folder>` with this skill's installed folder. Review a script before running it. `pr-reply.sh` posts a GitHub comment, `pr-resolve.sh` resolves review threads, and `pr-cleanup.sh` removes a worktree and local branch; use those only at the matching step in the guides. Cleanup is optional and must not delete unmerged work.
-
-`pr-cleanup.sh` also folds the merged default branch back into the parent tree it's run from. If that parent tree is dirty, it does not just refuse and stop — it checks each dirty file against the newly-merged default branch (content-for-content, ignoring whitespace). A file that's a confirmed-stale duplicate of what's already on the default branch gets reset away; a file that is not found there is reported by name and left untouched, since it may be unique work that never shipped. Read the script's own header comment for the exact behavior before relying on it.
-
-**Never wait on CI alone.** Use `scripts/pr-watch.sh <PR-number>` (or `--loop`) as the poll loop. It checks unresolved review threads first, then branch state, then CI, and prints `threads=N` on every line. When it exits 10, a thread is open: cancel this PR's in-flight CI (`--cancel-ci`) and resolve the thread before anything else. A wait loop that reads only CI status leaves a PR sitting on CI with open review conversations.
-**Round limit.** The fifth review is parked, not fixed (a round is one submitted review by the review bot; `pr-watch.sh` prints `round=N/5`). When threads are open at the fifth review or later (exit 16, PARK), do not fix them and do not cancel CI: record each as a known issue in the repo's backlog folder, push that one documentation commit, reply on the thread with the link, resolve it, list the parked items in the PR description, and merge on green CI after two clean polls. See "Round Limit: Park, Do Not Chase" in [Merge readiness](references/MERGE-READINESS.md).
-
-Poll for new review threads **every 30 seconds** while CI is still running, not only after it finishes. When review fixes require a push, cancel only the superseded PR CI runs and push without waiting for their results. Confirm replacement CI starts for the new head and resume polling immediately. Follow the scoped cancellation and readiness steps in [Merge readiness](references/MERGE-READINESS.md).
-
-Check the PR's ancestry (`pr-update-branch.sh <PR-number> --behind-by`, the compare API) and merge state on every poll and right before every merge: when another PR has merged into the base, this one is behind and cannot merge until it is updated. `mergeStateStatus` alone can hide a stale branch behind `BLOCKED` or `CLEAN`. Update it with `pr-update-branch.sh`, then wait for CI on the new tip. See "Keep the Branch Current With Its Base" in [Merge readiness](references/MERGE-READINESS.md).
-A review bot may be invisible in the PR's requested-reviewer list even when it is active. GitHub Copilot, for example, posts as `copilot-pull-request-reviewer` but may never appear in `reviewRequests`. Check the reviews endpoint (`gh api repos/<owner>/<repo>/pulls/<n>/reviews`) before concluding that no bot reviewed.
-
-## Finishing the PR
-
-Never approve your own PR. GitHub blocks self-approval at the platform level, so no permission or flag changes it.
-
-How the last step ends depends on the repository and on what the user authorized:
-
-- **Default, and the safe assumption:** when a required human approval is still missing, stop and report who must approve. Do not bypass it.
-- **When the user has authorized a bypass and the repo permits one:** finish the job. Merge with the repo's allowed method plus `--admin`, rather than handing back a PR that is otherwise done. Ask once, record the answer, and do not re-ask on every later PR in the same repo — repeatedly requesting permission that was already granted wastes the user's time.
-
-Both paths require the real quality bar first: CI green, every thread resolved, two clean polls. A bypass skips an approval gate, never the work.
-
-See [Merge readiness](references/MERGE-READINESS.md) §5 for how to tell which path applies and what `--admin` can and cannot do.
-
-## References
-
-- [Merge readiness](references/MERGE-READINESS.md)
-- [Split a large branch](references/SPLIT-LARGE-BRANCH.md)
-- [Helper scripts](README.md)
+1. Request the review bot the moment the PR opens; self-review the diff before the first push.
+2. Do not wait for CI: findings land mid-run. `pr-watch.sh --loop` handles it.
+3. Fix every open thread, then push once per round. Cancel superseded CI first; CI restarts by itself.
+4. The 4th bot review is parked, not fixed (`PR_ROUND_LIMIT`, default 4).
+5. A review bot can be invisible in `reviewRequests`; check `gh api repos/<owner>/<repo>/pulls/<n>/reviews`.
+6. Keep logs and large outputs out of the conversation: read only the failing step.
