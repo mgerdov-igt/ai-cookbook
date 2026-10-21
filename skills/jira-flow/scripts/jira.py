@@ -12,7 +12,11 @@ Read commands (always safe):
     search "<jql>" [--max 200]              one line per issue
     show <KEY> [--full]                     summary, status, owner, AC (+ description)
     brief <KEY...>                          status, owner, one line per AC heading
-    mine [--pi "<fix version>"] [--all]     open issues you may work on, yours first (config queries.mine)
+    mine [--project P] [--pi V] [--type T] [--status S] [--text W] [--jql J] [--all] [--max 30]
+                                            open issues you may work on, yours first (config
+                                            queries.mine). --project/--pi accept loose names
+                                            ("Terminal App", "PI 3") and print what they matched;
+                                            --type: a profile name or issue-type words ("TIR")
     pi "<fix version>"                      status counts and owners (config queries.pi)
     transitions <KEY> [--fields]            moves available now (+ screen fields, * = required)
     comments <KEY>
@@ -516,21 +520,54 @@ class Tool:
         q = (CFG.get("queries") or {}).get(name)
         return q or die("Set queries.%s in .jira-flow.json." % name)
 
+    def _resolve(self, what, wanted, names):
+        hit, others = jt.resolve_name(wanted, names)
+        if not hit:
+            die("%s %r matches %s. Ask the user which one." % (
+                what, wanted, ("several: " + ", ".join(others[:12])) if others else "nothing"))
+        if jt._norm(hit) != jt._norm(wanted):
+            print("%s: %r -> %r" % (what, wanted, hit))
+        return hit
+
     def cmd_mine(self):
         jql = self._query("mine")
+        project = None
+        if self.f.get("project"):
+            projects = self.j.call("GET", "/project")
+            by = {p["key"]: p["key"] for p in projects}
+            by.update({p["name"]: p["key"] for p in projects})
+            project = by[self._resolve("project", self.f["project"], list(by))]
+            jql = jt.with_project(jql, project)
         if self.f.get("pi"):
-            jql += ' AND fixVersion = "%s"' % self.f["pi"]
+            m = re.search(r'(?i)\bproject\s*=\s*"?([A-Z][A-Z0-9_]+)', jql)
+            names = [v["name"] for v in self.j.call("GET", "/project/%s/versions" % m.group(1))] if m else []
+            pi = self._resolve("fix version", self.f["pi"], names) if names else self.f["pi"]
+            jql += ' AND fixVersion = "%s"' % pi
+        if self.f.get("text"):
+            jql += ' AND text ~ "%s"' % self.f["text"].replace('"', '\\"')
+        if self.f.get("jql"):
+            jql += " AND (%s)" % self.f["jql"]
         if not self.f.get("all"):
             jql += " AND (assignee is EMPTY OR assignee = currentUser())"
         jql += " AND statusCategory != Done ORDER BY key"
         issues, _ = self.j.search(jql, "summary,status,assignee,issuetype")
+        if self.f.get("type"):  # a profile name ("defect") or words of an issue type ("TIR", "TIR BTC")
+            t = self.f["type"]
+            issues = [i for i in issues if jt._norm(self.profile(i["fields"]["issuetype"]["name"])[0] or "") == jt._norm(t)
+                      or all(w in jt._words(i["fields"]["issuetype"]["name"]) for w in jt._words(t))]
+        if self.f.get("status"):
+            s = jt._norm(self.f["status"])
+            issues = [i for i in issues if s in jt._norm(i["fields"]["status"]["name"])]
         me = self.me()
         issues.sort(key=lambda i: (i["fields"].get("assignee") or {}).get("name") != me)  # yours first, stable
-        for i in issues:
+        cap = int(self.f.get("max") or 30)
+        for i in issues[:cap]:
             f = i["fields"]
             print(" | ".join([i["key"], f["issuetype"]["name"], f["status"]["name"],
                               (f.get("assignee") or {}).get("name", "-"), f["summary"]]))
-        print("-- %d open issues%s, yours first" % (len(issues), "" if self.f.get("all") else " (unassigned or yours)"))
+        print("-- %d open issues%s, yours first%s" % (
+            len(issues), "" if self.f.get("all") else " (unassigned or yours)",
+            "; showing %d (--max N for more)" % cap if len(issues) > cap else ""))
 
     def cmd_pi(self):
         pi = self.pos[0] if self.pos else die('Give a fix version name, e.g. "Product Increment 2".')

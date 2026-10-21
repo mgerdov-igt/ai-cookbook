@@ -277,6 +277,53 @@ def profile_for(issue_type, profiles):
 
 
 # --------------------------------------------------------------------------------------
+# Loose names from a user's request ("Terminal App", "Project Iteration 3") -> Jira names
+# --------------------------------------------------------------------------------------
+def _words(s):
+    return re.findall(r"[a-z]+|\d+", (s or "").lower())
+
+
+def resolve_name(wanted, names):
+    """(match, others) for a loosely given name. Tries, in order: case-insensitive equality;
+    the same trailing number plus a shared word or initials ("PI 3", "Iteration 3" ->
+    "Product Increment 3"); all words contained. `match` is None when nothing or several fit;
+    `others` then lists the candidates to show the user."""
+    w = _norm(wanted)
+    exact = [n for n in names if _norm(n) == w]
+    if exact:
+        return exact[0], []
+    ww = _words(wanted)
+    one_word = [n for n in names if _norm(n) in ww]  # "Terminal App VTA": the key is said too
+    if len(one_word) == 1 and not one_word[0].isdigit():
+        return one_word[0], []
+    num = ww[-1] if ww and ww[-1].isdigit() else None
+    if num:
+        same = [n for n in names if _words(n)[-1:] == [num]]
+        if len(same) == 1:
+            return same[0], []
+        letters = {x for x in ww[:-1] if not x.isdigit()}
+        initials = "".join(x[0] for x in letters)
+        close = [n for n in same if letters & set(_words(n)) or
+                 any(x == "".join(y[0] for y in _words(n) if not y.isdigit()) for x in letters | {initials})]
+        if len(close) == 1:
+            return close[0], []
+        if same:
+            return None, same
+    contained = [n for n in names if ww and all(x in _words(n) for x in ww)]
+    if len(contained) == 1:
+        return contained[0], []
+    return None, contained
+
+
+def with_project(jql, key):
+    """`jql` scoped to project `key`: replaces its `project = X` / `project in (...)` clause,
+    or prefixes one."""
+    clause = 'project = "%s"' % key
+    new, n = re.subn(r'(?i)\bproject\s*(=\s*("[^"]*"|\S+)|in\s*\([^)]*\))', clause, jql, count=1)
+    return new if n else "%s AND (%s)" % (clause, jql)
+
+
+# --------------------------------------------------------------------------------------
 # Log reduction: big text attachments -> a short, deduplicated digest
 # --------------------------------------------------------------------------------------
 LEVEL_RE = re.compile(

@@ -17,7 +17,19 @@ One Jira issue `<KEY>` → clarified requirements → approved plan → implemen
 0. **No key given ("next ticket"):** pick candidates in this order:
    1. `<jira> pending`: anything waiting on you resumes first.
    2. Your in-flight work: `.jira-flow/*/state.json` with a phase other than `closed` or `stopped`.
-   3. `<jira> mine --pi "<current fix version>"` (ask for the PI name if the repo docs do not say), else `<jira> mine`. It lists your own issues first, then unassigned ones.
+   3. `<jira> mine` with the request's filters. It lists your own issues first, then unassigned ones, at most 30 (`--max N`).
+
+      | The user says | Flag |
+      |---|---|
+      | project name or key ("Terminal App", "VTA") | `--project "<as said>"` |
+      | release / PI / iteration / fix version ("Project Iteration 3", "PI 3") | `--pi "<as said>"` |
+      | "a story", "a TIR", "a defect" | `--type <word>`: a config profile name or issue-type words |
+      | a status ("in development", "reopened") | `--status "<part of the name>"` |
+      | a topic ("about printing") | `--text "<words>"` |
+      | anything else | `--jql "<clause>"` |
+      | "including other people's" | `--all` |
+
+      With no PI given, ask for it if the repo docs name a current one, otherwise list without it. A line like `fix version: 'PI 3' -> 'Product Increment 3'` shows what the loose name matched: repeat it to the user. If `mine` stops with "matches several" or "matches nothing", ask; do not retry with guesses.
    
    Skip Epics, Tasks and anything not matched by a profile. Prefer, in order: issues already assigned to you; `Reopened` defects; defects by severity; stories already `In Development` or `Assigned to Sprint`. Run `brief` on the top few to judge whether the AC are clear enough. Present the top three and let the user choose. Then continue with that key.
 1. `<jira> whoami`, then `<jira> digest <KEY>` (add `--window HH:MM-HH:MM` when the description gives a time window). Read `digest.md` and the reduced or preview companions of the attachments, not the raw files. If attachments say `NOT DOWNLOADED`, ask the user to save them into `.jira-flow/<KEY>/attachments/` and re-run `digest`.

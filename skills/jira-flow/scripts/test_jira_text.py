@@ -164,6 +164,32 @@ class TirResolveReplay(unittest.TestCase):
         self.assertEqual(jt.coerce(self.resolve["customfield_24599"], "Configuration"), {"value": "Configuration"})
 
 
+class LooseNames(unittest.TestCase):
+    VERSIONS = ["Product Increment %d" % n for n in range(2, 10)] + ["Epic Backlog"]
+
+    def test_fix_version_by_number(self):
+        for said in ("Project Iteration 3", "PI 3", "pi3", "Increment 3", "product increment 3"):
+            self.assertEqual(jt.resolve_name(said, self.VERSIONS)[0], "Product Increment 3", said)
+
+    def test_project_by_name_or_key(self):
+        names = ["VTA", "Terminal App", "POA", "Point of Access", "CLDTM", "Terminal Manager"]
+        self.assertEqual(jt.resolve_name("terminal app", names)[0], "Terminal App")
+        self.assertEqual(jt.resolve_name("vta", names)[0], "VTA")
+        self.assertEqual(jt.resolve_name("Terminal App VTA", names)[0], "VTA")
+        hit, others = jt.resolve_name("Terminal", names)
+        self.assertIsNone(hit)
+        self.assertEqual(others, ["Terminal App", "Terminal Manager"])
+
+    def test_no_match(self):
+        self.assertEqual(jt.resolve_name("PI 42", self.VERSIONS), (None, []))
+
+    def test_with_project(self):
+        self.assertEqual(jt.with_project('project = VTA AND issuetype = Story', "POA"),
+                         'project = "POA" AND issuetype = Story')
+        self.assertEqual(jt.with_project('project in (A, B) AND x = 1', "POA"), 'project = "POA" AND x = 1')
+        self.assertEqual(jt.with_project('issuetype = Bug', "POA"), 'project = "POA" AND (issuetype = Bug)')
+
+
 class Logs(unittest.TestCase):
     LOG = [
         "00:09:59.100 INFO boot",
