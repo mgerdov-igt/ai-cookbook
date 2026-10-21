@@ -14,6 +14,12 @@ One Jira issue `<KEY>` → clarified requirements → approved plan → implemen
 
 ## Phase 0: Intake (session)
 
+0. **No key given ("next ticket"):** pick candidates in this order:
+   1. `<jira> pending`: anything waiting on you resumes first.
+   2. Your in-flight work: `.jira-flow/*/state.json` with a phase other than `closed` or `stopped`.
+   3. `<jira> mine --pi "<current fix version>"` (ask for the PI name if the repo docs do not say), else `<jira> mine`. It lists your own issues first, then unassigned ones.
+   
+   Skip Epics, Tasks and anything not matched by a profile. Prefer, in order: issues already assigned to you; `Reopened` defects; defects by severity; stories already `In Development` or `Assigned to Sprint`. Run `brief` on the top few to judge whether the AC are clear enough. Present the top three and let the user choose. Then continue with that key.
 1. `<jira> whoami`, then `<jira> digest <KEY>` (add `--window HH:MM-HH:MM` when the description gives a time window). Read `digest.md` and the reduced or preview companions of the attachments, not the raw files. If attachments say `NOT DOWNLOADED`, ask the user to save them into `.jira-flow/<KEY>/attachments/` and re-run `digest`.
 2. **Ownership:** assigned to someone else → stop and report. Unassigned → `<jira> assign <KEY>`.
 3. **Re-entry:**
@@ -123,12 +129,16 @@ Keep the AC table in the PR body current when review changes something. After th
    - Otherwise: do not transition; list the gaps.
 3. **defect:**
    1. Run `<jira> transitions <KEY> --fields` at each step you can see, to learn the screen fields.
-   2. Write `resolve-fields.json`, a flat object keyed by field name, drafted from the PR:
+   2. Write `resolve-fields.json`, a flat object keyed by field name, drafted from the PR. It must fill every field in the profile's `required_fields` for the statuses on the way (`walk` refuses to start otherwise). For VTA/POA TIRs those are the fields filled on POA-44717: Resolution Description, Repair Code, Defect Origination Activity, Modules Affected, Release Considerations, Test Considerations and Fix Version/s for Resolve, then `Resolution: Fixed` for Ready for Dev Integration.
       - Resolution Description: the fix in one or two sentences.
       - Evaluation Notes: root cause and the change.
+      - Repair Code: one of the allowed options (Code, Configuration, Data, Hardware, Procedure, Requirement).
+      - Defect Origination Activity: one of its options (Requirements Analysis, Design, Code and Unit Test, Baseline, Planning). Ask the user if unsure.
       - Modules Affected: the changed packages.
+      - Release Considerations, Test Considerations: one line each, or `none`.
       - Unit Test Results: the regression test names and the CI run.
-      - Code Branch, Fix Version: only if known.
+      - Resolution: `Fixed`.
+      - Code Branch, Fix Version: only if known; ask for Fix Version.
       - Any other required field: leave it as `"?"` with a note.
    3. Do **not** walk: field values on a defect are reviewed by the user first (Phase 6b).
 4. Edit the status comment: merged commit, AC table or root cause and fix summary, parked review items, and the next step.

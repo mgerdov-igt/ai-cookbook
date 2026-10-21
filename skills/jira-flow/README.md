@@ -45,6 +45,7 @@ python3 tools/jira/jira.py init --project VTA --sample VTA-123,VTA-456
       "issue_types": ["Bug", "re:^TIR\\b"],
       "fields": {"severity": "Severity", "found_in": "Found-In Batch"},
       "path": ["Opened", "Reopened", "Assigned", "In Progress", "Resolved", "Ready for QA Test"],
+      "required_fields": {"Resolved": ["Resolution Description", "Repair Code", "Fix Version/s"]},
       "status": {"plan_approved": "In Progress", "pr_opened": "In Progress", "merged": "Ready for QA Test"},
       "never": ["Closed*", "Defer*"]
     }
@@ -64,6 +65,7 @@ python3 tools/jira/jira.py init --project VTA --sample VTA-123,VTA-456
 | `profiles.*.path` | Forward status order that `walk` may move along. Statuses not on the path are never entered by `walk`. |
 | `profiles.*.status` | Event → target status: `plan_approved`, `pr_opened`, `merged`. Leave an event out to skip it. |
 | `profiles.*.never` | Statuses or transition names never taken automatically; `*` and `?` wildcards. Walking from a `never` status is a no-op (the issue is final). |
+| `profiles.*.required_fields` | Optional. `{status: [field names]}` that your team treats as mandatory when entering that status, even if Jira's screen does not. `walk` checks the whole route before its first write; empty or `"?"` values count as missing. A listed field that is not on the transition screen is set by an issue edit right after that step. |
 
 Transition screens are filled from `walk --fields-file f.json`, a flat object keyed by field name or id: `{"Resolution Description": "...", "Repair Code": "Code", "Fix Version/s": "2.1.18"}`. Values are converted to the shape the field needs: option, user, version, resolution, number or array. A missing required field stops the walk and names the field.
 

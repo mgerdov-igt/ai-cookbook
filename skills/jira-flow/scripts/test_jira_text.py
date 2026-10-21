@@ -116,6 +116,54 @@ class Walk(unittest.TestCase):
         self.assertIsNone(jt.profile_for("Epic", profs)[0])
 
 
+class TirResolveReplay(unittest.TestCase):
+    """POA-44717 (TIR - BTC) went In Progress -> Resolved... -> Ready for Dev Integration -> Ready for QA Test."""
+    path = ["Opened", "Reopened", "Assigned", "In Progress", "Resolved, Ready for Unit Test/Review/Inspection",
+            "Ready for Dev Integration", "Ready for QA Test"]
+    never = ["Closed*", "Defer*", "Awaiting No Fix Approval"]
+    resolve = {"customfield_24607": {"name": "Resolution Description", "required": True, "schema": {"type": "string"}},
+               "customfield_24599": {"name": "Repair Code", "required": True, "schema": {"type": "option"}},
+               "customfield_24490": {"name": "Defect Origination Activity", "required": True, "schema": {"type": "option"}},
+               "fixVersions": {"name": "Fix Version/s", "required": True, "schema": {"type": "array", "items": "version"}}}
+    fields = {"Resolution Description": "zip-archive old log files", "Repair Code": "Configuration",
+              "Defect Origination Activity": "Design", "Fix Version": "Open Retail 2.0.10"}
+
+    def test_walk_sequence(self):
+        steps = {"In Progress": [_t("Close, No Fix", "Closed, Not a Problem"), _t("Defer", "Defer"),
+                                 _t("Resolve", self.path[4], **self.resolve)],
+                 self.path[4]: [_t("Ready for Integration", "Ready for Dev Integration",
+                                   resolution={"name": "Resolution", "required": True, "schema": {"type": "resolution"}})],
+                 "Ready for Dev Integration": [_t("Ready for QA", "Ready for QA Test")]}
+        cur, seen = "In Progress", []
+        while cur in steps:
+            t, _ = jt.choose_transition(steps[cur], self.path, cur, "Ready for QA Test", self.never)
+            self.assertIsNotNone(t)
+            seen.append(t["name"])
+            self.assertEqual(jt.missing_required(t, dict(self.fields, Resolution="Fixed")), [])
+            cur = t["to"]["name"]
+        self.assertEqual(seen, ["Resolve", "Ready for Integration", "Ready for QA"])
+        self.assertEqual(jt.missing_required(_t("Resolve", "x", **self.resolve), {}),
+                         ["Resolution Description", "Repair Code", "Defect Origination Activity", "Fix Version/s"])
+
+    def test_config_mandatory_fields_checked_for_whole_route(self):
+        req = {self.path[4]: ["Resolution Description", "Repair Code", "Defect Origination Activity",
+                              "Modules Affected", "Release Considerations", "Test Considerations", "Fix Version/s"],
+               "Ready for Dev Integration": ["Resolution"]}
+        full = dict(self.fields, **{"Modules Affected": "configuration", "Release Considerations": "none",
+                                    "Test Considerations": "none", "Resolution": "Fixed"})
+        self.assertEqual(jt.mandatory_on_route(req, self.path, "In Progress", "Ready for QA Test", full), [])
+        gaps = jt.mandatory_on_route(req, self.path, "In Progress", "Ready for QA Test",
+                                     dict(full, **{"Test Considerations": "?", "Resolution": ""}))
+        self.assertEqual(gaps, [(self.path[4], "Test Considerations"), ("Ready for Dev Integration", "Resolution")])
+        # Statuses already passed are not re-checked.
+        self.assertEqual(jt.mandatory_on_route(req, self.path, "Ready for Dev Integration", "Ready for QA Test", {}), [])
+
+    def test_fix_version_alias_and_coerce(self):
+        self.assertTrue(jt.field_matches("Fix Version", "fixVersions", self.resolve["fixVersions"]))
+        self.assertEqual(jt.coerce(self.resolve["fixVersions"], "Open Retail 2.0.10"), [{"name": "Open Retail 2.0.10"}])
+        self.assertEqual(jt.coerce(self.resolve["customfield_24599"], "Configuration"), {"value": "Configuration"})
+
+
 class Logs(unittest.TestCase):
     LOG = [
         "00:09:59.100 INFO boot",

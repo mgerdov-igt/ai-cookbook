@@ -1,6 +1,6 @@
 ---
 name: jira-to-pr
-description: Take one Jira story or bug/TIR from requirements to a merged PR. Digest the issue, ask clarifying questions in the session and/or as one Jira comment, write a plan and get it approved, implement it in a separate worktree, open one PR linked both ways with the issue, drive it to merge, then move the issue to its configured status, with a few clean, edited-in-place comments on both sides. Resumable when answers or approval arrive later on Jira. Invoke on "implement VTA-123", "jira-to-pr VTA-123", "work on this ticket", "fix TIR ABC-456", "resume VTA-123", "any Jira replies?".
+description: Take one Jira story or bug/TIR from requirements to a merged PR. Digest the issue, ask clarifying questions in the session and/or as one Jira comment, write a plan and get it approved, implement it in a separate worktree, open one PR linked both ways with the issue, drive it to merge, then move the issue to its configured status, with a few clean, edited-in-place comments on both sides. Resumable when answers or approval arrive later on Jira. Invoke on "implement VTA-123", "jira-to-pr VTA-123", "work on this ticket", "take the next Jira ticket", "fix TIR ABC-456", "resume VTA-123", "any Jira replies?".
 ---
 
 # Jira to PR
@@ -9,7 +9,12 @@ One Jira issue (Story or Bug/TIR) → one PR in the current repo → merged. It 
 
 ## What to do when invoked
 
+- **Preflight (every invocation, about three commands):**
+  1. Find `<jira>` (see PROCEDURE.md, Conventions).
+  2. Run `<jira> whoami`. It must print your user and a `config:` path. With no config, stop and point the user to `jira-flow`'s README (Set up a new project).
+  3. If the config shown by `whoami` has `"read_only": true` (or `JIRA_FLOW_READ_ONLY=1` is set), tell the user once that Jira will not be changed (comments, links and transitions become dry runs, listed in the final report) and ask whether to continue that way. Only the user flips `"read_only"` in `.jira-flow.json`.
 - **`pending` / "any Jira replies?":** run `jira.py pending` and offer to resume the issues it lists.
+- **"next ticket" / "next available Jira" / no key given:** pick a candidate with PROCEDURE.md Phase 0 step 0, show the user the top three (key, type, status, summary) with your recommendation, and wait for their choice before any write. Never auto-assign an issue the user did not pick.
 - **`<KEY>` (new or resume):** do Phases 0 to 2 of `PROCEDURE.md` **inline**, because they need the user: intake, clarifying questions and plan approval. Read only the sections for those phases. If `.jira-flow/<KEY>/state.json` exists, continue from the phase it records.
 - **Once the plan is approved:** spawn **one background general-purpose agent** for Phases 3 to 6 and return at once:
   - Copilot CLI: `task` tool, `agent_type: general-purpose`, `mode: background`.

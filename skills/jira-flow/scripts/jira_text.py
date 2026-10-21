@@ -192,13 +192,45 @@ def choose_transition(transitions, path, current, target, never=()):
     return best, "ok"
 
 
+def field_key(s):
+    """Normalized field name for matching: case-insensitive, `Fix Version/s` == `Fix Version`."""
+    n = _norm(s)
+    return n[:-2] if n.endswith("/s") else n
+
+
+def field_matches(key, fid, meta):
+    return field_key(key) in (field_key(fid), field_key((meta or {}).get("name")))
+
+
 def missing_required(transition, provided):
     """Names of required screen fields that have no default and were not provided."""
-    have = {_norm(k) for k in provided}
     out = []
     for fid, f in (transition.get("fields") or {}).items():
-        if f.get("required") and not f.get("hasDefaultValue") and _norm(fid) not in have and _norm(f.get("name")) not in have:
+        if f.get("required") and not f.get("hasDefaultValue") and not any(field_matches(k, fid, f) for k in provided):
             out.append(f.get("name") or fid)
+    return out
+
+
+def _filled(v):
+    return v not in (None, "", [], {}) and str(v).strip() not in ("?", "")
+
+
+def mandatory_on_route(required_fields, path, current, target, provided):
+    """Config-mandatory fields (`required_fields`: {status: [field names]}) for every status
+    after `current` up to `target` that `provided` lacks or leaves empty/"?".
+    Returns [(status, field name)]."""
+    order = [_norm(s) for s in path]
+    cur, tgt = _norm(current), _norm(target)
+    if cur not in order or tgt not in order:
+        return []
+    ci, ti = order.index(cur), order.index(tgt)
+    out = []
+    for status, names in (required_fields or {}).items():
+        s = _norm(status)
+        if s in order and ci < order.index(s) <= ti:
+            for n in names:
+                if not any(field_key(k) == field_key(n) and _filled(v) for k, v in provided.items()):
+                    out.append((status, n))
     return out
 
 

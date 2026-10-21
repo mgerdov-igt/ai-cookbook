@@ -12,7 +12,7 @@ Read commands (always safe):
     search "<jql>" [--max 200]              one line per issue
     show <KEY> [--full]                     summary, status, owner, AC (+ description)
     brief <KEY...>                          status, owner, one line per AC heading
-    mine [--pi "<fix version>"] [--all]     open issues you may work on (config queries.mine)
+    mine [--pi "<fix version>"] [--all]     open issues you may work on, yours first (config queries.mine)
     pi "<fix version>"                      status counts and owners (config queries.pi)
     transitions <KEY> [--fields]            moves available now (+ screen fields, * = required)
     comments <KEY>
@@ -360,6 +360,14 @@ class Tool:
         if jt.is_banned(cur, prof.get("never", [])):
             print('%s: "%s" is a final status for this profile; nothing to do' % (k, cur))
             return
+        req_cfg = prof.get("required_fields") or {}
+        gaps = jt.mandatory_on_route(req_cfg, path, cur, target, provided)
+        if gaps:
+            self.plan('%s: %s --> %s' % (k, cur, target))
+            print("     mandatory (profile required_fields), missing or empty in --fields-file:")
+            for st, n in gaps:
+                print('       %-30s for "%s"' % (n, st))
+            return
         for _ in range(len(path) + 2):
             ts = self.j.call("GET", "/issue/%s/transitions?expand=transitions.fields" % k)["transitions"]
             t, why = jt.choose_transition(ts, path, cur, target, prof.get("never", []))
@@ -377,20 +385,39 @@ class Tool:
             vals = {}
             for fid, meta in (t.get("fields") or {}).items():
                 for key, v in provided.items():
-                    if key.lower() in (fid.lower(), (meta.get("name") or "").lower()):
+                    if jt.field_matches(key, fid, meta):
                         vals[fid] = jt.coerce(meta, v)
             if vals:
                 body["fields"] = vals
                 for fid, v in vals.items():
                     print("     set %s = %s" % (t["fields"][fid].get("name", fid), json.dumps(v)[:120]))
+            # Mandatory for this status but not on the screen: set by an issue edit after the move.
+            want = next((ns for st, ns in req_cfg.items() if _norm_eq(st, t["to"]["name"])), [])
+            off = {n: v for n in want for key, v in provided.items() if jt.field_key(key) == jt.field_key(n)
+                   and not any(jt.field_matches(key, fid, m) for fid, m in (t.get("fields") or {}).items())}
+            for n, v in off.items():
+                print("     then edit %s = %s  (not on the transition screen)" % (n, json.dumps(v)[:100]))
             if not self.yes:
                 if _norm_eq(t["to"]["name"], target):
                     return
-                print('     ... then more steps toward "%s" (a dry run can only preview the first step)' % target)
+                print('     ... then more steps toward "%s" (a dry run can only preview the first step;'
+                      ' mandatory fields for the whole route are present)' % target)
                 return
             self.j.call("POST", "/issue/%s/transitions" % k, body)
             cur = t["to"]["name"]
+            if off:
+                self._edit_fields(k, off)
         print('%s: now "%s"' % (k, cur))
+
+    def _edit_fields(self, k, named_values):
+        meta = self.j.call("GET", "/issue/%s/editmeta" % k)["fields"]
+        out = {}
+        for n, v in named_values.items():
+            fid = next((f for f, m in meta.items() if jt.field_matches(n, f, m)), None)
+            if not fid:
+                die("%s: %r is not editable on this issue; set it by hand" % (k, n))
+            out[fid] = jt.coerce(meta[fid], v)
+        self.j.call("PUT", "/issue/" + k, {"fields": out})
 
     def do_set(self, k):
         if not self.may_write(k):
@@ -496,11 +523,14 @@ class Tool:
         if not self.f.get("all"):
             jql += " AND (assignee is EMPTY OR assignee = currentUser())"
         jql += " AND statusCategory != Done ORDER BY key"
-        issues, _ = self.j.search(jql, "summary,status,assignee")
+        issues, _ = self.j.search(jql, "summary,status,assignee,issuetype")
+        me = self.me()
+        issues.sort(key=lambda i: (i["fields"].get("assignee") or {}).get("name") != me)  # yours first, stable
         for i in issues:
             f = i["fields"]
-            print(" | ".join([i["key"], f["status"]["name"], (f.get("assignee") or {}).get("name", "-"), f["summary"]]))
-        print("-- %d open issues%s" % (len(issues), "" if self.f.get("all") else " (unassigned or yours)"))
+            print(" | ".join([i["key"], f["issuetype"]["name"], f["status"]["name"],
+                              (f.get("assignee") or {}).get("name", "-"), f["summary"]]))
+        print("-- %d open issues%s, yours first" % (len(issues), "" if self.f.get("all") else " (unassigned or yours)"))
 
     def cmd_pi(self):
         pi = self.pos[0] if self.pos else die('Give a fix version name, e.g. "Product Increment 2".')
