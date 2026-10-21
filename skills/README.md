@@ -124,6 +124,8 @@ Before running any skill, verify:
 | [android-screenshot](./android-screenshot/SKILL.md) | Android device/emulator + Windows host | `adb`, connected device | Final stdout line is PNG path |
 | [github-pr-flow](./github-pr-flow/SKILL.md) | Windows, macOS, Linux | Git, `gh`, Bash, Python 3 | PR readiness verdict or ordered PR-splitting workflow |
 | [pr-to-main](./pr-to-main/SKILL.md) | Any git repo with a GitHub remote | Git, `gh`, Bash, Python 3, a background-agent tool | Pending work landed on the default branch via a PR, from a separate worktree |
+| [jira-flow](./jira-flow/SKILL.md) | Windows, macOS, Linux | Python 3.8+, Jira Server/DC personal access token, repo `.jira-flow.json` | Compact issue digests (logs reduced), dry-run-first comments, links and workflow walks |
+| [jira-to-pr](./jira-to-pr/SKILL.md) | Any git repo with a GitHub remote | `jira-flow`, `github-pr-flow`, Git, `gh`, a background-agent tool | One Jira story or bug taken through questions and an approved plan to a merged, cross-linked PR |
 | [repository-cleanup](./repository-cleanup/SKILL.md) | Any repository and supported OS | Repository instructions and local verification tools | Approved cleanup proposal, then verified change report |
 | [flutter-upgrade](./flutter-upgrade/SKILL.md) | Flutter/Dart projects | Flutter/Dart toolchain, package manager, repository CI guidance | Upgrade plan and verification report |
 | [plan-auto-work](./plan-auto-work/SKILL.md) | Any repository and supported OS | Approved plan and repository verification tools | Implemented plan, verified work, and parked-step report |
@@ -136,6 +138,8 @@ Before running any skill, verify:
 | Screenshot of native Windows app | [windows-screenshot](./windows-screenshot/SKILL.md) | "Capture a screenshot of the Flutter app window" | Browser screenshot tooling for non-browser native app windows |
 | Screenshot of connected Android device app | [android-screenshot](./android-screenshot/SKILL.md) | "Take screenshot from connected Android phone" | `windows-screenshot` when target is Android device/emulator |
 | Prepare or split GitHub PRs | [github-pr-flow](./github-pr-flow/SKILL.md) | "Check this PR for merge readiness" | Running cleanup before verifying the PR merged |
+| Read or update a Jira issue | [jira-flow](./jira-flow/SKILL.md) | "What does VTA-123 need?" | Pasting whole logs or running writes without the dry run first |
+| Implement a Jira story or bug end to end | [jira-to-pr](./jira-to-pr/SKILL.md) | "Implement VTA-123" | Coding before the clarifying questions and plan are approved |
 | Plan or perform repository cleanup | [repository-cleanup](./repository-cleanup/SKILL.md) | "Propose a safe cleanup pass" | Deleting ignored files without inspecting them |
 | Upgrade Flutter, Dart, or pub packages | [flutter-upgrade](./flutter-upgrade/SKILL.md) | "Plan a safe Flutter SDK upgrade" | Updating only the obvious SDK pin or sharing credentials in logs |
 | Implement an approved plan autonomously | [plan-auto-work](./plan-auto-work/SKILL.md) | "Implement the plan end to end" | Starting without an approved plan or silently changing models |
@@ -165,6 +169,7 @@ This saves setup time and keeps the skill's tested requests, results, and safety
 - [Windows screenshot capture example](./windows-screenshot/SKILL.md)
 - [Android screenshot capture example](./android-screenshot/SKILL.md)
 - [GitHub PR flow](./github-pr-flow/SKILL.md)
+- [Jira flow](./jira-flow/SKILL.md) and [Jira to PR](./jira-to-pr/SKILL.md)
 - [Repository cleanup](./repository-cleanup/SKILL.md)
 - [Flutter and Dart upgrade](./flutter-upgrade/SKILL.md)
 - [Plan auto-work](./plan-auto-work/SKILL.md)
