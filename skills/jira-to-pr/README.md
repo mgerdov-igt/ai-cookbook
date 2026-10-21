@@ -16,6 +16,7 @@ Turns one Jira story or bug/TIR into one merged GitHub PR, cross-linked with the
 
 | Say | What happens |
 |---|---|
+| "list my Jira tickets" / "what TIRs do I have in PI 3?" | A list with severity and a one-line description per issue. You reply with a key ("run with POA-27666") and the flow starts on it. |
 | "take the next Jira ticket" | The agent lists your pending replies, your in-flight issues and the top candidates, and you pick one. |
 | "take the next Jira ticket for Terminal App VTA, Project Iteration 3" (also: "a TIR", "in development", "about printing") | The same, narrowed. Loose names are matched to the real project and fix version, and the agent tells you what it matched. |
 | "implement VTA-123" / "fix TIR POA-456" | Digest, then questions, then plan, each with your approval. Then a background agent implements, opens the PR and merges it. |

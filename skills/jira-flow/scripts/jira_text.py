@@ -323,6 +323,16 @@ def with_project(jql, key):
     return new if n else "%s AND (%s)" % (clause, jql)
 
 
+_WIKI_RE = re.compile(r"\{(code|noformat|quote|color|panel)[^}]*\}|\{\*\}|!\S+?!|^h\d\.\s*|\[([^|\]]*)\|[^\]]*\]|[*_]{1,2}(?=\S)|(?<=\S)[*_]{1,2}", re.M)
+
+
+def short_text(s, width=140):
+    """One plain line from a Jira description: wiki markup dropped, whitespace collapsed, cut at `width`."""
+    t = _WIKI_RE.sub(lambda m: m.group(2) or "", s or "")
+    t = " ".join(t.split())
+    return t if len(t) <= width else t[:width - 3].rstrip() + "..."
+
+
 # --------------------------------------------------------------------------------------
 # Log reduction: big text attachments -> a short, deduplicated digest
 # --------------------------------------------------------------------------------------

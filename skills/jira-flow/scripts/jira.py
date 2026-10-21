@@ -12,9 +12,11 @@ Read commands (always safe):
     search "<jql>" [--max 200]              one line per issue
     show <KEY> [--full]                     summary, status, owner, AC (+ description)
     brief <KEY...>                          status, owner, one line per AC heading
-    mine [--project P] [--pi V] [--type T] [--status S] [--text W] [--jql J] [--all] [--max 30]
+    mine [--project P] [--pi V] [--type T] [--status S] [--text W] [--jql J] [--all] [--max 30] [--no-desc]
                                             open issues you may work on, yours first (config
-                                            queries.mine). --project/--pi accept loose names
+                                            queries.mine): key | type | status | owner | severity
+                                            (else priority) | summary, then a one-line description.
+                                            --project/--pi accept loose names
                                             ("Terminal App", "PI 3") and print what they matched;
                                             --type: a profile name or issue-type words ("TIR")
     pi "<fix version>"                      status counts and owners (config queries.pi)
@@ -76,7 +78,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import jira_text as jt  # noqa: E402
 
 BOOL_FLAGS = {"yes", "full", "all", "force-owner", "fields", "md", "raw", "resolved", "no-attachments",
-              "force", "allow-never"}
+              "force", "allow-never", "no-desc"}
 DEFAULT_PROFILES = {
     "story": {"issue_types": ["Story", "Enabler Story", "User Story"], "fields": {"ac": "Acceptance Criteria"}},
     "defect": {"issue_types": ["Bug", "Defect", "Defects", "re:^TIR\\b"], "fields": {}},
@@ -550,7 +552,9 @@ class Tool:
         if not self.f.get("all"):
             jql += " AND (assignee is EMPTY OR assignee = currentUser())"
         jql += " AND statusCategory != Done ORDER BY key"
-        issues, _ = self.j.search(jql, "summary,status,assignee,issuetype")
+        sev_ids = sorted({self.j.fid(n) for p in self.profiles.values()
+                          for n in [(p.get("fields") or {}).get("severity")] if n} - {None})
+        issues, _ = self.j.search(jql, ",".join(["summary,status,assignee,issuetype,priority,description"] + sev_ids))
         if self.f.get("type"):  # a profile name ("defect") or words of an issue type ("TIR", "TIR BTC")
             t = self.f["type"]
             issues = [i for i in issues if jt._norm(self.profile(i["fields"]["issuetype"]["name"])[0] or "") == jt._norm(t)
@@ -563,8 +567,12 @@ class Tool:
         cap = int(self.f.get("max") or 30)
         for i in issues[:cap]:
             f = i["fields"]
+            sev = next((render(f.get(s)) for s in sev_ids if f.get(s)), "")
+            rank = ("sev " + sev) if sev else ("prio " + render(f.get("priority"))) if f.get("priority") else "-"
             print(" | ".join([i["key"], f["issuetype"]["name"], f["status"]["name"],
-                              (f.get("assignee") or {}).get("name", "-"), f["summary"]]))
+                              (f.get("assignee") or {}).get("name", "-"), rank, f["summary"]]))
+            if not self.f.get("no-desc"):
+                print("    " + (jt.short_text(f.get("description")) or "(no description)"))
         print("-- %d open issues%s, yours first%s" % (
             len(issues), "" if self.f.get("all") else " (unassigned or yours)",
             "; showing %d (--max N for more)" % cap if len(issues) > cap else ""))

@@ -190,6 +190,14 @@ class LooseNames(unittest.TestCase):
         self.assertEqual(jt.with_project('issuetype = Bug', "POA"), 'project = "POA" AND (issuetype = Bug)')
 
 
+class ShortText(unittest.TestCase):
+    def test_wiki_markup_dropped_and_cut(self):
+        d = "h2. Steps\r\n\r\nTerminal returns {*}*Error 12*{*} see [log|http://x/y] !shot.png!\r\n{code}stack{code}"
+        self.assertEqual(jt.short_text(d), "Steps Terminal returns Error 12 see log stack")
+        self.assertEqual(len(jt.short_text("word " * 100, 40)), 40)
+        self.assertEqual(jt.short_text(None), "")
+
+
 class Logs(unittest.TestCase):
     LOG = [
         "00:09:59.100 INFO boot",
