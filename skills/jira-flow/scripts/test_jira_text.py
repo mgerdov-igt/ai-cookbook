@@ -168,6 +168,20 @@ class TirResolveReplay(unittest.TestCase):
                          [("Ready for Dev Integration", "Resolution")])  # pr_opened
         self.assertEqual(jt.mandatory_on_route(req, self.path, "Ready for Dev Integration", "Ready for QA Test", {}), [])
 
+    def test_downstream_qa_statuses_are_already_past(self):
+        """Full TIR workflow (2026-10 diagram): after Ready for QA Test come QA, customer test and production."""
+        path = self.path + ["In QA Test", "Ready for Customer Test", "In Customer Test", "Ready for Production"]
+        offered = [_t("Fail", "Reopened"), _t("Pass", "Ready for Customer Test")]
+        for cur in path[7:]:
+            self.assertEqual(jt.choose_transition(offered, path, cur, "Ready for QA Test", self.never),
+                             (None, "already past 'Ready for QA Test'"))
+        # Final and parked branches stay untouched.
+        for cur in ("Closed, Passed Verification", "Closed, Won't Fix", "Defer", "Awaiting No Fix Approval"):
+            self.assertTrue(jt.is_banned(cur, self.never), cur)
+        # From Ready for QA Test nothing is walked further, even when QA's moves are offered.
+        self.assertEqual(jt.choose_transition(offered, path, "Ready for QA Test", "Ready for QA Test", self.never)[1],
+                         "already there")
+
     def test_fix_version_alias_and_coerce(self):
         self.assertTrue(jt.field_matches("Fix Version", "fixVersions", self.resolve["fixVersions"]))
         self.assertEqual(jt.coerce(self.resolve["fixVersions"], "Open Retail 2.0.10"), [{"name": "Open Retail 2.0.10"}])
