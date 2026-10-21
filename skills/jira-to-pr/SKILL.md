@@ -32,6 +32,6 @@ One Jira issue (Story or Bug/TIR) → one PR in the current repo → merged. It 
 
   Tell the user in one or two sentences that the run has started, that the result arrives as a background-agent notification, and that their folder and branch are untouched.
 
-- **When the agent reports back:** relay its short report. For a defect, it leaves a resolution-fields draft for the user to confirm. Finish Phase 6b of the procedure inline.
+- **When the agent reports back:** relay its short report. Only if it lists a stuck walk or read-only dry runs, finish Phase 6b of the procedure inline.
 
 The user can stop at any gate. Answers and approval can come later as Jira replies; the run then ends cleanly and resumes with `jira-to-pr <KEY>`.

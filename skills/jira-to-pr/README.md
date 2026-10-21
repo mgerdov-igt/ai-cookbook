@@ -23,7 +23,7 @@ Turns one Jira story or bug/TIR into one merged GitHub PR, cross-linked with the
 | "any Jira replies?" | `pending`: your issues whose questions or plan got answers on Jira. |
 | "resume VTA-123" | Continues from `.jira-flow/VTA-123/state.json`. |
 
-What you see on Jira: at most three comments from you, each edited in place (Questions, Implementation plan, Status). You also see a link to the PR and status moves as configured. A story moves only when every AC is met. A TIR moves only after you confirm the resolution fields.
+What you see on Jira: the issue moves with the work. For a TIR: In Progress when the agent starts on it (via Assigned), Resolved once the fix and unit tests pass, Ready for Dev Integration when the PR is open and CI plus Copilot review run, Ready for QA Test when the PR merges. The mandatory resolution fields are drafted with the plan, so approving the plan approves them. Comments from you, each edited in place: Questions, Implementation plan, Ready for Dev Integration (PR, tests, then the CI and review outcome) and Ready for QA Test (merge, what changed, how to verify, evidence). A story uses one Status comment instead of the last two and moves only when every AC is met.
 
 What you see on GitHub: one PR titled `<KEY>: <summary>`, whose body links the issue. For a story, the body has an AC-to-evidence table; for a defect, it has root cause, fix, regression test, log evidence and risk.
 

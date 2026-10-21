@@ -44,7 +44,7 @@ Write commands (print a plan and change NOTHING unless --yes is given):
                                             Markdown is converted unless --raw
     remotelink <KEY> --url URL --title T [--resolved]   idempotent (globalId = URL)
     transition <KEY...> --to "<transition name|id>" [--allow-never]
-    walk <KEY...> [--to "<status>" | --event plan_approved|pr_opened|merged] [--fields-file F.json]
+    walk <KEY...> [--to "<status>" | --event started|plan_approved|fixed|pr_opened|merged] [--fields-file F.json]
                                             forward along the profile's path; fills screen
                                             fields from F.json ({"Field name": value}); stops
                                             on a missing required field; never takes a
@@ -851,7 +851,8 @@ class Tool:
             sts = next((list(s) for s, ts in groups.items() if its[0] in ts), [])
             skel["profiles"][pname] = {"issue_types": its, "fields": dict(prof.get("fields", {})),
                                        "path": sts, "_todo": "order `path` as the forward workflow and trim it",
-                                       "status": {"plan_approved": None, "pr_opened": None, "merged": None},
+                                       "status": {"started": None, "plan_approved": None, "fixed": None,
+                                                  "pr_opened": None, "merged": None},
                                        "never": []}
         txt = json.dumps(skel, indent=2)
         if self.f.get("out"):

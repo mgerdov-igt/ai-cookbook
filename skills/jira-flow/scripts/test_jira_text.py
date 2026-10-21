@@ -158,6 +158,16 @@ class TirResolveReplay(unittest.TestCase):
         # Statuses already passed are not re-checked.
         self.assertEqual(jt.mandatory_on_route(req, self.path, "Ready for Dev Integration", "Ready for QA Test", {}), [])
 
+    def test_staged_events_check_only_their_own_step(self):
+        """jira-to-pr walks started -> fixed -> pr_opened -> merged; each checks only the statuses it enters."""
+        req = {self.path[4]: ["Resolution Description", "Repair Code"], "Ready for Dev Integration": ["Resolution"]}
+        self.assertEqual(jt.mandatory_on_route(req, self.path, "Opened", "In Progress", {}), [])  # started
+        self.assertEqual(jt.mandatory_on_route(req, self.path, "In Progress", self.path[4],
+                                               {"Resolution Description": "x", "Repair Code": "Code"}), [])  # fixed
+        self.assertEqual(jt.mandatory_on_route(req, self.path, self.path[4], "Ready for Dev Integration", {}),
+                         [("Ready for Dev Integration", "Resolution")])  # pr_opened
+        self.assertEqual(jt.mandatory_on_route(req, self.path, "Ready for Dev Integration", "Ready for QA Test", {}), [])
+
     def test_fix_version_alias_and_coerce(self):
         self.assertTrue(jt.field_matches("Fix Version", "fixVersions", self.resolve["fixVersions"]))
         self.assertEqual(jt.coerce(self.resolve["fixVersions"], "Open Retail 2.0.10"), [{"name": "Open Retail 2.0.10"}])

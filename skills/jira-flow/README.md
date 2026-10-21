@@ -44,9 +44,11 @@ python3 tools/jira/jira.py init --project VTA --sample VTA-123,VTA-456
     "defect": {
       "issue_types": ["Bug", "re:^TIR\\b"],
       "fields": {"severity": "Severity", "found_in": "Found-In Batch"},
-      "path": ["Opened", "Reopened", "Assigned", "In Progress", "Resolved", "Ready for QA Test"],
-      "required_fields": {"Resolved": ["Resolution Description", "Repair Code", "Fix Version/s"]},
-      "status": {"plan_approved": "In Progress", "pr_opened": "In Progress", "merged": "Ready for QA Test"},
+      "path": ["Opened", "Reopened", "Assigned", "In Progress", "Resolved", "Ready for Dev Integration", "Ready for QA Test"],
+      "required_fields": {"Resolved": ["Resolution Description", "Repair Code", "Fix Version/s"],
+                          "Ready for Dev Integration": ["Resolution"]},
+      "status": {"started": "In Progress", "fixed": "Resolved",
+                 "pr_opened": "Ready for Dev Integration", "merged": "Ready for QA Test"},
       "never": ["Closed*", "Defer*"]
     }
   }
@@ -63,7 +65,7 @@ python3 tools/jira/jira.py init --project VTA --sample VTA-123,VTA-456
 | `profiles` | The first profile whose `issue_types` matches wins (exact name, case-insensitive, or `re:<regex>`). List the narrower profile first, for example `TIR - Developer` before `re:^TIR`. |
 | `profiles.*.fields` | Label → Jira field **name** (or id). `digest` shows these fields; `ac` is the acceptance-criteria field; `epic` and `points` are optional. |
 | `profiles.*.path` | Forward status order that `walk` may move along. Statuses not on the path are never entered by `walk`. |
-| `profiles.*.status` | Event → target status: `plan_approved`, `pr_opened`, `merged`. Leave an event out to skip it. |
+| `profiles.*.status` | Event → target status. `jira-to-pr` fires, in order: `started` (work begins on the issue), `plan_approved`, `fixed` (fix done, unit tests pass), `pr_opened` (PR open, CI and review running), `merged`. Leave an event out to skip it; `walk` passes through the path statuses in between (for example Assigned) and is a no-op when the issue is already there or past. |
 | `profiles.*.never` | Statuses or transition names never taken automatically; `*` and `?` wildcards. Walking from a `never` status is a no-op (the issue is final). |
 | `profiles.*.required_fields` | Optional. `{status: [field names]}` that your team treats as mandatory when entering that status, even if Jira's screen does not. `walk` checks the whole route before its first write; empty or `"?"` values count as missing. A listed field that is not on the transition screen is set by an issue edit right after that step. |
 

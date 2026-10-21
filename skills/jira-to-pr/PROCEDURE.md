@@ -9,7 +9,17 @@ One Jira issue `<KEY>` → clarified requirements → approved plan → implemen
 - **Work folder:** `<REPO_ROOT>/.jira-flow/<KEY>/` (gitignored). It holds `digest.md`, `attachments/`, `state.json`, `questions.md`, `plan.md`, comment drafts and `resolve-fields.json`. Sub-agents get **paths** to these files, never pasted content.
 - **`state.json`:** `{"key", "profile", "phase", "branch", "worktree", "pr", "updated"}`. `phase` is one of `intake`, `waiting_answers`, `planning`, `waiting_approval`, `approved`, `implementing`, `pr_open`, `merged`, `closed`, `stopped`. Update it at every phase change; resuming means reading it.
 - **Jira writes:** run each write once without `--yes` and check the `PLAN` line, then run it with `--yes`. The user's request to run this workflow authorises the writes listed in this procedure, and only those. If the tool says read-only mode, carry on and list every skipped write in the final report.
-- **Comments:** at most three of yours per issue. Each is edited in place with `upsert-comment --marker questions|plan|status --title "<Title>" --file <draft.md>`. Write Markdown; it is converted to wiki markup. No emoji. Mention a person (`[~username]`) only when you ask them something. Never quote tokens, terminal or retailer IDs, or other secrets from logs.
+- **Comments:** few, each edited in place with `upsert-comment --marker <m> --title "<Title>" --file <draft.md>`. Markers: `questions`, `plan`, then `dev-integration` (PR open, CI and review progress) and `qa` (the merge outcome for QA). A story uses `status` instead of the last two. Write Markdown; it is converted to wiki markup. No emoji. Mention a person (`[~username]`) only when you ask them something. Never quote tokens, terminal or retailer IDs, or other secrets from logs.
+- **Status moves:** the issue follows the work. Each move is `<jira> walk <KEY> --event <e>` (plus `--fields-file .jira-flow/<KEY>/resolve-fields.json` from `fixed` on). The profile's `status` map decides the target; an unmapped event does nothing. For a TIR (`defect` profile in VTA/POA):
+
+  | Event | When | Status |
+  |---|---|---|
+  | `started` | Phase 0, the user picked the issue | Assigned (if not yet), then In Progress |
+  | `fixed` | Phase 3, fix committed and unit tests pass | Resolved, Ready for Unit Test/Review/Inspection |
+  | `pr_opened` | Phase 4, PR open, CI and Copilot review running | Ready for Dev Integration |
+  | `merged` | Phase 6a, PR merged | Ready for QA Test |
+
+  A walk that stops ("stuck": the next move belongs to another role; or a missing field) does not stop the work: note it in `state.json` as `jira_stuck`, carry on, and report it.
 - **Profile:** `digest` prints the issue's profile. `story` means requirements are acceptance criteria (AC). `defect` (and variants such as `defect-dev`) means requirements are repro steps, actual result and the expected result. Neither (Epic, Task, unknown type): stop and say the unit of work must be one Story or one Bug/TIR.
 
 ## Phase 0: Intake (session)
@@ -37,7 +47,8 @@ One Jira issue `<KEY>` → clarified requirements → approved plan → implemen
 3. **Re-entry:**
    - Status `Reopened`, or a resolved remote link to an earlier PR: this is a fix that failed QA. Read the `NEW` comments and attachments and the earlier PR (`gh pr view <n>`), and treat the old fix as a suspect. Always use a new branch and a new PR.
    - `state.json` exists: resume at its phase.
-4. Write `state.json` with `phase: intake`.
+4. `<jira> walk <KEY> --event started` (dry run, then `--yes`): Assigned if it was not, then In Progress.
+5. Write `state.json` with `phase: intake`.
 
 ## Phase 1: Clarify (session)
 
@@ -65,6 +76,17 @@ Write `plan.md`:
   - The fix.
   - Regression test(s).
   - Risk and impact on other paths.
+  - **Resolution fields:** draft `resolve-fields.json` now, because the issue is resolved mid-run (`fixed`), not after the merge. It is a flat object keyed by field name and must fill every field in the profile's `required_fields` on the way to Ready for Dev Integration (`walk` refuses to start otherwise; `"?"` counts as missing). For VTA/POA TIRs (as filled on POA-44717):
+    - Resolution Description: the intended fix in one or two sentences (Phase 3 rewrites it from the real fix).
+    - Repair Code: one of Code, Configuration, Data, Hardware, Procedure, Requirement.
+    - Defect Origination Activity: one of Requirements Analysis, Design, Code and Unit Test, Baseline, Planning.
+    - Modules Affected: the packages the plan touches.
+    - Release Considerations, Test Considerations: one line each, or `none`.
+    - Fix Version/s: ask the user. Code Branch: the planned branch name.
+    - Resolution: `Fixed`.
+    - Evaluation Notes (optional): the root cause.
+
+    Show the fields with the plan; approving the plan approves them. `<jira> transitions <KEY> --fields` (on an issue in In Progress) shows any extra screen field.
 
 Show the plan to the user. Post a short version (15 lines at most: approach, steps, tests, "reply *approved* to proceed") with `upsert-comment --marker plan --title "Implementation plan"`.
 
@@ -81,13 +103,20 @@ After approval:
 2. Implement `plan.md` step by step in the worktree, applying `plan-auto-work`'s method: verify each step before the next, and record real evidence. Follow the repo's own instructions (AGENTS.md, playbooks, protected contracts).
 3. **defect:** commit the failing test first and show that it fails; then commit the fix and show that the test passes. Both results go in the PR body.
 4. Commit messages start with `<KEY>: `. Run the repo's local checks (analyze, affected tests) before pushing.
-5. If the plan proves wrong in a way that changes scope or behaviour, stop. Report the gap; do not improvise a different feature.
+5. **defect, fix done and unit tests green:** in `resolve-fields.json`, rewrite only the free-text fields from the real change (Resolution Description, Modules Affected, Evaluation Notes, and Unit Test Results with the test names and the local result). Keep the user-approved choices (Repair Code, Origination, Fix Version). Then `<jira> walk <KEY> --event fixed --fields-file .jira-flow/<KEY>/resolve-fields.json` (dry run, then `--yes`) → Resolved, Ready for Unit Test/Review/Inspection.
+6. If the plan proves wrong in a way that changes scope or behaviour, stop. Report the gap; do not improvise a different feature.
 
 ## Phase 4: PR and links (background agent)
 
 1. Push, then `gh pr create --base <default> --title "<KEY>: <summary>" --body-file <body.md>`, then `gh pr edit <n> --add-reviewer "@copilot"`.
-2. `<jira> remotelink <KEY> --url <PR url> --title "PR #<n>: <title>"`, then `<jira> walk <KEY> --event pr_opened`.
-3. Status comment (`--marker status --title "Status"`): PR link, branch, "in review", what is being verified.
+2. `<jira> remotelink <KEY> --url <PR url> --title "PR #<n>: <title>"`, then `<jira> walk <KEY> --event pr_opened --fields-file .jira-flow/<KEY>/resolve-fields.json` → Ready for Dev Integration (TIR; Resolution = Fixed is set on this step).
+3. **Dev-integration comment** (`--marker dev-integration --title "Ready for Dev Integration: PR #<n>"`; a story uses `--marker status --title "Status"`):
+   ```markdown
+   PR: [#<n> <title>](<PR url>) on branch `<branch>`, into `<default>`.
+   Fix: <one or two sentences>. Regression test: `<test name>` (failed before, passes now).
+   Unit tests: <command> - <N passed>.
+   CI: running. Copilot review: requested.
+   ```
 4. Set `pr` and `phase: pr_open` in `state.json`.
 
 **PR body: story**
@@ -131,7 +160,7 @@ Follow `pr-to-main`'s `PROCEDURE.md`, **Phases 3 and 4 only**:
 - the round limit of 4 with parking;
 - `bash <scripts>/pr-merge.sh <n> --admin`.
 
-Keep the AC table in the PR body current when review changes something. After the merge, set `phase: merged`.
+Keep the AC table in the PR body current when review changes something. When the PR is ready to merge (or parked), edit the dev-integration comment's last line once with the outcome: `CI: green (<run url>). Copilot review: <r> rounds, <n> findings fixed, <p> parked (<one line each>).` Do not edit it on every round. After the merge, set `phase: merged`.
 
 ## Phase 6a: Close-out (background agent)
 
@@ -140,33 +169,26 @@ Keep the AC table in the PR body current when review changes something. After th
    - All MET: run `<jira> walk <KEY> --event merged`.
    - Otherwise: do not transition; list the gaps.
 3. **defect:**
-   1. Run `<jira> transitions <KEY> --fields` at each step you can see, to learn the screen fields.
-   2. Write `resolve-fields.json`, a flat object keyed by field name, drafted from the PR. It must fill every field in the profile's `required_fields` for the statuses on the way (`walk` refuses to start otherwise). For VTA/POA TIRs those are the fields filled on POA-44717: Resolution Description, Repair Code, Defect Origination Activity, Modules Affected, Release Considerations, Test Considerations and Fix Version/s for Resolve, then `Resolution: Fixed` for Ready for Dev Integration.
-      - Resolution Description: the fix in one or two sentences.
-      - Evaluation Notes: root cause and the change.
-      - Repair Code: one of the allowed options (Code, Configuration, Data, Hardware, Procedure, Requirement).
-      - Defect Origination Activity: one of its options (Requirements Analysis, Design, Code and Unit Test, Baseline, Planning). Ask the user if unsure.
-      - Modules Affected: the changed packages.
-      - Release Considerations, Test Considerations: one line each, or `none`.
-      - Unit Test Results: the regression test names and the CI run.
-      - Resolution: `Fixed`.
-      - Code Branch, Fix Version: only if known; ask for Fix Version.
-      - Any other required field: leave it as `"?"` with a note.
-   3. Do **not** walk: field values on a defect are reviewed by the user first (Phase 6b).
-4. Edit the status comment: merged commit, AC table or root cause and fix summary, parked review items, and the next step.
+   1. `<jira> walk <KEY> --event merged --fields-file .jira-flow/<KEY>/resolve-fields.json` (dry run, then `--yes`) → Ready for QA Test.
+   2. **QA comment** (`--marker qa --title "Ready for QA Test"`), written for the tester:
+      ```markdown
+      Merged: PR [#<n>](<PR url>) as `<merge sha>` into `<default>` on <date>. Build/version: <fix version or CI artifact, if known>.
+      What changed: <one or two sentences, user-visible>.
+      How to verify: <the issue's repro steps, and the expected result now>.
+      Also check: <Test Considerations: nearby paths that could regress>.
+      Evidence: regression test `<name>`; CI <green, run url>; Copilot review <r> rounds, <n> fixed, <p> parked (<one line each>).
+      ```
+4. **story:** edit the status comment: merged commit, the AC table, parked review items, and the next step.
 5. Remove the worktree and the merged local branch (`git worktree remove`, `git branch -d`).
-6. Set `phase: merged` (defect) or `closed` (story).
-7. Report: PR URL, merged or why not, AC verdicts or fix summary, Jira status before and after, Jira writes skipped in read-only mode, and, for a defect, the path to `resolve-fields.json`.
+6. Set `phase: closed`.
+7. Report: PR URL, merged or why not, AC verdicts or fix summary, Jira status before and after (and any `jira_stuck`), Jira writes skipped in read-only mode.
 
-## Phase 6b: Defect resolution (session)
+## Phase 6b: Jira follow-up (session, only if needed)
 
-Show `resolve-fields.json` to the user and ask them to confirm or edit it. Then:
-
-1. Run `<jira> walk <KEY> --event merged --fields-file .jira-flow/<KEY>/resolve-fields.json` as a dry run, then again with `--yes`.
-2. If the walk stops on a missing field, ask for it and run again.
-3. If it stops with "stuck" (the next transition belongs to another role, such as a lead moving the issue to QA), report where it stopped and who needs to act.
-
-Then set `phase: closed`.
+Only when a walk stopped (`jira_stuck` in `state.json`), or the run ended in read-only mode:
+1. If it stopped on a missing field, ask the user for it, update `resolve-fields.json`, and re-run the same walk.
+2. If it stopped with "stuck" (the next transition belongs to another role, such as a lead moving the issue to QA), report where it stopped and who needs to act.
+3. In read-only mode, list the walks and comments that were dry runs, so the user can run them after flipping `read_only`.
 
 ## Final report (always short)
 
