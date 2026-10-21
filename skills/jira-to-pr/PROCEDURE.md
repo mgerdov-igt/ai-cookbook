@@ -9,7 +9,7 @@ One Jira issue `<KEY>` → clarified requirements → approved plan → implemen
 - **Work folder:** `<REPO_ROOT>/.jira-flow/<KEY>/` (gitignored). It holds `digest.md`, `attachments/`, `state.json`, `questions.md`, `plan.md`, comment drafts and `resolve-fields.json`. Sub-agents get **paths** to these files, never pasted content.
 - **`state.json`:** `{"key", "profile", "phase", "branch", "worktree", "pr", "updated"}`. `phase` is one of `intake`, `waiting_answers`, `planning`, `waiting_approval`, `approved`, `implementing`, `pr_open`, `merged`, `closed`, `stopped`. Update it at every phase change; resuming means reading it.
 - **Jira writes:** run each write once without `--yes` and check the `PLAN` line, then run it with `--yes`. The user's request to run this workflow authorises the writes listed in this procedure, and only those. If the tool says read-only mode, carry on and list every skipped write in the final report.
-- **Comments:** few, each edited in place with `upsert-comment --marker <m> --title "<Title>" --file <draft.md>`. Markers: `questions`, `plan`, then `dev-integration` (PR open, CI and review progress) and `qa` (the merge outcome for QA). A story uses `status` instead of the last two. Write Markdown; it is converted to wiki markup. No emoji. Mention a person (`[~username]`) only when you ask them something. Never quote tokens, terminal or retailer IDs, or other secrets from logs.
+- **Comments:** few, each edited in place with `upsert-comment --marker <m> --title "<Title>" --file <draft.md>`. Markers: `questions`, `plan`, then `fixed` (root cause, the fix and local test results, for the reviewer), `dev-integration` (PR open, CI and review progress) and `qa` (the merge outcome for QA). A story uses `status` instead of the last three. Write Markdown; it is converted to wiki markup. No emoji. Mention a person (`[~username]`) only when you ask them something. Never quote tokens, terminal or retailer IDs, or other secrets from logs.
 - **Status moves:** the issue follows the work. Each move is `<jira> walk <KEY> --event <e>` (plus `--fields-file .jira-flow/<KEY>/resolve-fields.json` from `fixed` on). The profile's `status` map decides the target; an unmapped event does nothing. For a TIR (`defect` profile in VTA/POA):
 
   | Event | When | Status |
@@ -104,6 +104,16 @@ After approval:
 3. **defect:** commit the failing test first and show that it fails; then commit the fix and show that the test passes. Both results go in the PR body.
 4. Commit messages start with `<KEY>: `. Run the repo's local checks (analyze, affected tests) before pushing.
 5. **defect, fix done and unit tests green:** in `resolve-fields.json`, rewrite only the free-text fields from the real change (Resolution Description, Modules Affected, Evaluation Notes, and Unit Test Results with the test names and the local result). Keep the user-approved choices (Repair Code, Origination, Fix Version). Then `<jira> walk <KEY> --event fixed --fields-file .jira-flow/<KEY>/resolve-fields.json` (dry run, then `--yes`) → Resolved, Ready for Unit Test/Review/Inspection.
+   Then the **fix comment** (`--marker fixed --title "Fixed, unit tests pass"`), written for the reviewer. Fill it from the real commits and test output, not from the plan; write "none" rather than leaving out a line:
+   ```markdown
+   Root cause: <what was wrong and why, one or two sentences; file/function if useful>.
+   Fix: <what changed, one or two sentences>. Modules: <Modules Affected>.
+   Regression test: `<test name>` - failed before the fix (`<short failure line>`), passes now.
+   Unit tests: `<command>` - <N passed, 0 failed>. Analyze/lint: <clean, or the warnings left>.
+   Branch: `<branch>`, commits `<sha>` (test) and `<sha>` (fix). Not yet pushed for review; the PR follows.
+   Deviations from the plan: <none, or one line each and why>.
+   Risk / test considerations: <nearby paths that could regress>.
+   ```
 6. If the plan proves wrong in a way that changes scope or behaviour, stop. Report the gap; do not improvise a different feature.
 
 ## Phase 4: PR and links (background agent)
