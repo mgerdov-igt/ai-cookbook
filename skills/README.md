@@ -127,6 +127,7 @@ Before running any skill, verify:
 | [jira-flow](./jira-flow/SKILL.md) | Windows, macOS, Linux | Python 3.8+, Jira Server/DC personal access token, repo `.jira-flow.json` | Compact issue digests (logs reduced), dry-run-first comments, links and workflow walks |
 | [jira-to-pr](./jira-to-pr/SKILL.md) | Any git repo with a GitHub remote | `jira-flow`, `github-pr-flow`, Git, `gh`, a background-agent tool | One Jira story or bug taken through questions and an approved plan to a merged, cross-linked PR |
 | [repository-cleanup](./repository-cleanup/SKILL.md) | Any repository and supported OS | Repository instructions and local verification tools | Approved cleanup proposal, then verified change report |
+| [architecture-cleanup](./architecture-cleanup/SKILL.md) | Any software repository | Repository instructions, code access, and local verification tools | Evidence-based architecture findings and an approved, verified refactoring roadmap |
 | [flutter-upgrade](./flutter-upgrade/SKILL.md) | Flutter/Dart projects | Flutter/Dart toolchain, package manager, repository CI guidance | Upgrade plan and verification report |
 | [plan-auto-work](./plan-auto-work/SKILL.md) | Any repository and supported OS | Approved plan and repository verification tools | Implemented plan, verified work, and parked-step report |
 
@@ -141,6 +142,7 @@ Before running any skill, verify:
 | Read or update a Jira issue | [jira-flow](./jira-flow/SKILL.md) | "What does VTA-123 need?" | Pasting whole logs or running writes without the dry run first |
 | Implement a Jira story or bug end to end | [jira-to-pr](./jira-to-pr/SKILL.md) | "Implement VTA-123" | Coding before the clarifying questions and plan are approved |
 | Plan or perform repository cleanup | [repository-cleanup](./repository-cleanup/SKILL.md) | "Propose a safe cleanup pass" | Deleting ignored files without inspecting them |
+| Audit architecture or plan systemic refactoring | [architecture-cleanup](./architecture-cleanup/SKILL.md) | "Audit this codebase for duplication and propose a refactor roadmap" | Editing before presenting evidence and getting approval for the concrete scope |
 | Upgrade Flutter, Dart, or pub packages | [flutter-upgrade](./flutter-upgrade/SKILL.md) | "Plan a safe Flutter SDK upgrade" | Updating only the obvious SDK pin or sharing credentials in logs |
 | Implement an approved plan autonomously | [plan-auto-work](./plan-auto-work/SKILL.md) | "Implement the plan end to end" | Starting without an approved plan or silently changing models |
 | Browser page screenshot | Browser screenshot tool | "Screenshot this web page in the browser" | Do not use `windows-screenshot` for browser pages |
@@ -171,6 +173,7 @@ This saves setup time and keeps the skill's tested requests, results, and safety
 - [GitHub PR flow](./github-pr-flow/SKILL.md)
 - [Jira flow](./jira-flow/SKILL.md) and [Jira to PR](./jira-to-pr/SKILL.md)
 - [Repository cleanup](./repository-cleanup/SKILL.md)
+- [Architecture cleanup](./architecture-cleanup/SKILL.md)
 - [Flutter and Dart upgrade](./flutter-upgrade/SKILL.md)
 - [Plan auto-work](./plan-auto-work/SKILL.md)
 
@@ -229,6 +232,19 @@ Why the skill helps:
 
 If it fails:
 - If no device is usable, run `adb devices`. If it says `unauthorized`, accept the USB debugging prompt on the device.
+
+## Example 4: Architecture cleanup
+
+How it works:
+1. Skill reads the repository's instructions, contracts, working-tree state, and verification guidance.
+2. Skill audits relevant code for evidence-backed duplication, complexity, architectural drift, debt, and performance concerns.
+3. Skill proposes a prioritized, bounded roadmap and waits for approval before implementation.
+4. Skill applies approved changes in small slices and runs the repository's relevant checks.
+
+Why the skill helps:
+- Keeps architecture review separate from feature work and disk cleanup.
+- Prevents assumptions about dead code or project-specific contracts from becoming destructive changes.
+- Produces a consistent report of findings, approved changes, remaining debt, risks, and checks.
 
 Rule of thumb:
 - If you repeat a workflow three or more times in a week, consider making a skill.

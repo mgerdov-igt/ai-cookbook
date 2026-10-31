@@ -55,10 +55,10 @@ Read `..\COURSE_PLAN.md`, `..\LESSON_PLAN.md`, and the chosen track in `..\pract
 - For example, format a multiple-choice exercise like this:
 
   ```text
-  Progress: Lesson 2 of 6 | Exercise 2 of 6
+  Progress: Lesson 2 of 6 | Exercise 1 of 5
 
   +-----------------------------------------------------------+
-  | YOUR TURN | Exercise 2 of 6                               |
+  | YOUR TURN | Exercise 1 of 5                               |
   | Question: Which detail is stated in the business request? |
   |                                                          |
   | A) Exact matching is required                            |

@@ -7,10 +7,10 @@ Whenever the student is expected to respond, put the exact question and response
 Example:
 
 ```text
-Progress: Lesson 2 of 6 | Exercise 2 of 6
+Progress: Lesson 2 of 6 | Exercise 1 of 5
 
 +-----------------------------------------------------------+
-| YOUR TURN | Exercise 2 of 6                               |
+| YOUR TURN | Exercise 1 of 5                               |
 | Question: Which detail is stated in the business request? |
 |                                                          |
 | A) Exact matching is required                            |
@@ -34,17 +34,15 @@ Progress: Lesson 2 of 6 | Exercise 2 of 6
 
 **Finish when:** The student can state the user need and identify at least one consequential behavior that the business request leaves open.
 
-## Lesson 2 — Gather Context and Clarify Behavior (6 exercises)
+## Lesson 2 — Gather Context and Clarify Behavior (5 exercises)
 
-**Teach:** Clarifying questions turn an incomplete request into shared decisions. Ask about behavior that changes the result. Do not ask about implementation details before the expected behavior is clear. The tutor must ask one clarification at a time and record the student's decision.
+**Teach:** The tutor has already loaded the bundled task list, starter, checks, and business request. Present the relevant project facts to the student; do not ask them to locate course files or bring another project. Clarifying questions turn an incomplete request into shared decisions. Ask about behavior that changes the result. Do not ask about implementation details before the expected behavior is clear. The tutor must ask one clarification at a time and record the student's decision.
 
-1. **Find project facts.** Ask which file defines the current task data and retrieval behavior: `A: practice/WorkItems.ps1` / `B: a personal project` / `C: an unrelated tool guide`. **Key:** A. Show the actual four tasks from that file or the practice guide.
-2. **Separate facts from unknowns.** Ask which statement is established by the business request: `A: exact matching is required` / `B: the user needs to focus on a stage/teammate; matching rules are not specified` / `C: sorting is required`. **Key:** B. Keep the detailed key hidden until the student answers.
-3. **Clarify what to match.** First state that the business request does not say whether the student should enter a complete stage/name or just part of the text. Ask which rule is clearer for this small exercise: one complete value or partial text. Show examples using the selected field but do not give the recommendation before the attempt. **Key:** choose one complete value as the bounded course scope; for example, `Open` matches the two Open tasks, not `In Progress`. If the student prefers partial text, explain how that changes the exercise's fixed baseline, then let them choose the bounded course scope or pause. Do not mark the initial preference wrong; assess whether they understand the trade-off.
-4. **Clarify case handling.** Point out that the source has `Open` but a user may type `open`. Ask whether these should count as the same value and why. **Key:** yes, ignore letter case to make matching predictable and convenient. Record this as a clarified decision, not text from the original request.
-5. **Clarify an omitted value.** Ask what should happen when no stage/name is supplied: `A: return the full original list in its original order` / `B: return no tasks` / `C: treat the missing value as an error`. The bounded exercise scope is A because it preserves existing behavior. Explain the alternatives before asking; record the choice as a requirement.
-
-6. **Clarify an unmatched value.** Ask what the result should be when the user supplies a value that matches no task, such as `Blocked` for status or `Casey` for owner. **Key:** return no items. Explain that this is the published check's bounded behavior if the student proposes a different valid product choice, and record the source accurately.
+1. **Separate facts from unknowns.** Ask which statement is established by the business request: `A: exact matching is required` / `B: the user needs to focus on a stage/teammate; matching rules are not specified` / `C: sorting is required`. **Key:** B. Keep the detailed key hidden until the student answers.
+2. **Clarify what to match.** First state that the business request does not say whether the student should enter a complete stage/name or just part of the text. Ask which rule is clearer for this small exercise: one complete value or partial text. Show examples using the selected field but do not give the recommendation before the attempt. **Key:** choose one complete value as the bounded course scope; for example, `Open` matches the two Open tasks, not `In Progress`. If the student prefers partial text, explain how that changes the exercise's fixed baseline, then let them choose the bounded course scope or pause. Do not mark the initial preference wrong; assess whether they understand the trade-off.
+3. **Clarify case handling.** Point out that the source has `Open` but a user may type `open`. Ask whether these should count as the same value and why. **Key:** yes, ignore letter case to make matching predictable and convenient. Record this as a clarified decision, not text from the original request.
+4. **Clarify an omitted value.** Ask what should happen when no stage/name is supplied: `A: return the full original list in its original order` / `B: return no tasks` / `C: treat the missing value as an error`. The bounded exercise scope is A because it preserves existing behavior. Explain the alternatives before asking; record the choice as a requirement.
+5. **Clarify an unmatched value.** Ask what the result should be when the user supplies a value that matches no task, such as `Blocked` for status or `Casey` for owner. **Key:** return no items. Explain that this is the published check's bounded behavior if the student proposes a different valid product choice, and record the source accurately.
 
 For each clarification, capture: the question, decision, and effect on the result. Accept student questions and requests for examples. Never claim these details were present in the original BA request.
 
