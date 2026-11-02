@@ -23,3 +23,4 @@ Put each kind of project information in one clear place so people and AI tools c
 - [README](./README.md)
 - [Repeatable repo workflow](./REPO-WORKFLOW.md)
 - [Skills and scripts](../skills/README.md)
+- [Repository governance skill](../skills/repository-governance/SKILL.md): audit and reconcile docs using these rules
