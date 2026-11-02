@@ -58,18 +58,25 @@ python3 tools/jira/jira.py init --project VTA --sample VTA-123,VTA-456
 | Key | Meaning |
 |---|---|
 | `url` | Jira base URL (`JIRA_URL` overrides). |
-| `read_only` | `true`: `--yes` is ignored and any non-GET request is refused. Good for a first trial. `JIRA_FLOW_READ_ONLY=1` does the same per shell. |
+| `read_only` | `true`: `--yes` is ignored and non-GET requests are refused. `--allow-write` overrides this config value for one invocation; writes still require `--yes`. `JIRA_FLOW_READ_ONLY=1` is a hard lock and cannot be overridden. |
 | `work_dir` | Per-issue cache under the repo root: `digest.md`, `attachments/`, `seen.json`, plus the `jira-to-pr` state and drafts. Gitignore it. |
 | `token` | Notes file and labels searched for the token (`label: value` on one line, or the label line followed by the value). |
 | `queries.mine` / `queries.pi` | JQL behind `mine` and `pi`; `{pi}` is replaced by the fix-version argument. |
 | `profiles` | The first profile whose `issue_types` matches wins (exact name, case-insensitive, or `re:<regex>`). List the narrower profile first, for example `TIR - Developer` before `re:^TIR`. |
 | `profiles.*.fields` | Label → Jira field **name** (or id). `digest` shows these fields; `ac` is the acceptance-criteria field; `epic` and `points` are optional. |
-| `profiles.*.path` | Forward status order that `walk` may move along. Statuses not on the path are never entered by `walk`. List the statuses **after** your last target too (for example QA and customer test): `walk` never moves into them, because no event targets them and it never overshoots, but an issue already there then counts as "already past" instead of "off the path". |
+| `profiles.*.path` | Forward status order that `walk` may move along. Statuses not on the path are never entered by default. With explicit `--allow-never`, `walk --to <status>` may append one never-listed final target after this path; the target must also be a live transition from the path's final status. List downstream statuses after ordinary targets (for example QA and customer test) so issues already there count as "already past" instead of "off the path". |
 | `profiles.*.status` | Event → target status. `jira-to-pr` fires, in order: `started` (work begins on the issue), `plan_approved`, `fixed` (fix done, unit tests pass), `pr_opened` (PR open, CI and review running), `merged`. Leave an event out to skip it; `walk` passes through the path statuses in between (for example Assigned) and is a no-op when the issue is already there or past. |
 | `profiles.*.never` | Statuses or transition names never taken automatically; `*` and `?` wildcards. Walking from a `never` status is a no-op (the issue is final). |
 | `profiles.*.required_fields` | Optional. `{status: [field names]}` that your team treats as mandatory when entering that status, even if Jira's screen does not. `walk` checks the whole route before its first write; empty or `"?"` values count as missing. A listed field that is not on the transition screen is set by an issue edit right after that step. |
 
 Transition screens are filled from `walk --fields-file f.json`, a flat object keyed by field name or id: `{"Resolution Description": "...", "Repair Code": "Code", "Fix Version/s": "2.1.18"}`. Values are converted to the shape the field needs: option, user, version, resolution, number or array. A missing required field stops the walk and names the field.
+
+For a specifically authorized terminal exception, one `walk` can follow the configured path and take a never-listed terminal status as its final step. Keep the default dry run, then repeat with `--yes`; if the repo config has `"read_only": true`, add `--allow-write` to both invocations. `JIRA_FLOW_READ_ONLY=1` always blocks writes.
+
+```bash
+python3 tools/jira/jira.py walk KEY --to Done --allow-never --allow-write
+python3 tools/jira/jira.py walk KEY --to Done --allow-never --allow-write --yes
+```
 
 ## Comment markers
 

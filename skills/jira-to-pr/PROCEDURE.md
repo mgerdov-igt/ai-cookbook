@@ -4,8 +4,8 @@ One Jira issue `<KEY>` → clarified requirements → approved plan → implemen
 
 ## Conventions
 
-- **`<jira>`** is `python3 <REPO_ROOT>/tools/jira/jira.py` if that file exists, else `python3 ~/.copilot/skills/jira-flow/scripts/jira.py` (or `~/.claude/...`). Always run it from `<REPO_ROOT>`. Its usage text (no arguments) is the command reference; the `jira-flow` SKILL.md has the rules.
-- **`<scripts>`** is the PR tooling: `<REPO_ROOT>/tools/pr-review/` if present, else `~/.copilot/skills/github-pr-flow/scripts/`. Run each as `bash <scripts>/<name>`.
+- **`<jira>`** is `python3 <REPO_ROOT>/tools/jira/jira.py` if that file exists, else `python3 <skills>/jira-flow/scripts/jira.py`, where `<skills>` is the folder that holds this skill's folder (jira-flow sits next to it). Always run it from `<REPO_ROOT>`. Its usage text (no arguments) is the command reference; the `jira-flow` SKILL.md has the rules.
+- **`<scripts>`** is the PR tooling: `<REPO_ROOT>/tools/pr-review/` if present, else `<skills>/github-pr-flow/scripts/`. Run each as `bash <scripts>/<name>`.
 - **Work folder:** `<REPO_ROOT>/.jira-flow/<KEY>/` (gitignored). It holds `digest.md`, `attachments/`, `state.json`, `questions.md`, `plan.md`, comment drafts and `resolve-fields.json`. Sub-agents get **paths** to these files, never pasted content.
 - **`state.json`:** `{"key", "profile", "phase", "branch", "worktree", "pr", "updated"}`. `phase` is one of `intake`, `waiting_answers`, `planning`, `waiting_approval`, `approved`, `implementing`, `pr_open`, `merged`, `closed`, `stopped`. Update it at every phase change; resuming means reading it.
 - **Jira writes:** run each write once without `--yes` and check the `PLAN` line, then run it with `--yes`. The user's request to run this workflow authorises the writes listed in this procedure, and only those. If the tool says read-only mode, carry on and list every skipped write in the final report.

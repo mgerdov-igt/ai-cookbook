@@ -6,7 +6,7 @@ You ship every pending change in `<REPO_ROOT>` to the default branch as a review
 
 Keep your own context small: read only failing log steps, never whole CI logs or whole files you do not need; use the scripts' compact output.
 
-**Scripts.** Use `<REPO_ROOT>/tools/pr-review/` if it exists (it travels with the repo, also present in the worktree); otherwise `~/.copilot/skills/github-pr-flow/scripts/` or `~/.claude/skills/github-pr-flow/scripts/`. Call them as `bash <scripts>/<name>`. Call this directory `<scripts>` below. Each script's header comment is its usage doc.
+**Scripts.** Use `<REPO_ROOT>/tools/pr-review/` if it exists (it travels with the repo, also present in the worktree); otherwise the `github-pr-flow/scripts/` folder that sits next to this skill's folder (`../github-pr-flow/scripts/` relative to the folder holding this PROCEDURE.md; the personal skill folders and plugin folders both keep skills side by side). Call them as `bash <scripts>/<name>`. Call this directory `<scripts>` below. Each script's header comment is its usage doc.
 
 **Temp files** go under `$TEMP/pr-to-main-<ship-branch>/` only (never in `<REPO_ROOT>`, never in the worktree), deleted in Phase 6.
 

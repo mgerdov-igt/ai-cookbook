@@ -8,6 +8,10 @@ Each skill is a folder with a `SKILL.md` file. The open [Agent Skills format](ht
 
 Keep `SKILL.md` focused on the task, not one AI tool. Avoid tool-specific slash commands and frontmatter fields in the shared instructions. A skill can include scripts and reference files, but list their required programs and operating systems. The instructions should tell the AI tool what to do; scripts should do repeatable work.
 
+## Use from TauShell
+
+[TauShell](https://github.com/ma99us/tau-shell) reads `tau-shell.yaml` at the repo root. Its `skills` list names the skills TauShell enables by default, and its `presets` list adds prompt presets. TauShell loads the skills into Claude Code and Copilot CLI sessions with `--plugin-dir`, so nothing is copied into `~/.claude` or `~/.copilot`. Skill instructions must refer to sibling files relative to their own folder, never to a fixed home-folder path.
+
 ## Install for Personal Use
 
 Copy the whole skill folder to the personal skills folder used by your AI tool. The path varies by tool. For example:

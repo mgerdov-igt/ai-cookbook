@@ -74,6 +74,13 @@ def _t(name, to, **fields):
 class Walk(unittest.TestCase):
     path = ["Opened", "Reopened", "Assigned", "In Progress", "Resolved", "Ready for Dev Integration", "Ready for QA Test"]
 
+    def test_terminal_target_requires_explicit_opt_in(self):
+        never = ["Closed*", "Defer*"]
+        self.assertEqual(jt.walk_route(self.path, "Closed, Passed Verification", never), (self.path, False))
+        route, allow = jt.walk_route(self.path, "Closed, Passed Verification", never, allow_never=True)
+        self.assertEqual(route, self.path + ["Closed, Passed Verification"])
+        self.assertTrue(allow)
+
     def test_picks_nearest_forward(self):
         ts = [_t("Close", "Closed"), _t("Resolve", "Resolved"), _t("Start", "In Progress")]
         t, _ = jt.choose_transition(ts, self.path, "Assigned", "Ready for QA Test")
@@ -87,6 +94,19 @@ class Walk(unittest.TestCase):
                                                "Resolved", ["close*"])[0])
         self.assertTrue(jt.is_banned("Closed, No Fix", ["Closed*"]))
         self.assertFalse(jt.is_banned("Reopened", ["Closed*"]))
+
+    def test_explicitly_allowed_banned_terminal_target(self):
+        path = self.path + ["Done"]
+        passed = _t("Passed E2E Int Test", "Done")
+        t, _ = jt.choose_transition([passed], path, self.path[-1], "Done", ["Done", "Descoped"],
+                                    allow_banned_target=True)
+        self.assertEqual(t, passed)
+        self.assertIsNone(jt.choose_transition([passed], path, self.path[-1], "Done", ["Done", "Descoped"])[0])
+        banned_transition = _t("Passed E2E Int Test", "Done")
+        self.assertIsNone(jt.choose_transition([banned_transition], path, self.path[-1], "Done",
+                                               ["Done", "Passed E2E Int Test"],
+                                               allow_banned_target=True)[0])
+
 
     def test_already_there_or_past(self):
         self.assertEqual(jt.choose_transition([], self.path, "Resolved", "Resolved")[1], "already there")
@@ -114,6 +134,17 @@ class Walk(unittest.TestCase):
         self.assertEqual(jt.profile_for("TIR - BTC", profs)[0], "defect")
         self.assertEqual(jt.profile_for("story", profs)[0], "story")
         self.assertIsNone(jt.profile_for("Epic", profs)[0])
+
+
+class ReadOnly(unittest.TestCase):
+    def test_config_read_only_is_default_but_can_be_explicitly_overridden(self):
+        self.assertEqual(jt.read_only_reason(True), "config read_only")
+        self.assertEqual(jt.read_only_reason(True, allow_write=True), "")
+        self.assertEqual(jt.read_only_reason(False), "")
+
+    def test_environment_read_only_is_a_hard_lock(self):
+        self.assertEqual(jt.read_only_reason(False, "1"), "JIRA_FLOW_READ_ONLY")
+        self.assertEqual(jt.read_only_reason(True, "1", allow_write=True), "JIRA_FLOW_READ_ONLY")
 
 
 class TirResolveReplay(unittest.TestCase):

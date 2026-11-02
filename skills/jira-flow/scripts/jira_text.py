@@ -162,11 +162,32 @@ def is_banned(name, never):
     return any(fnmatch.fnmatchcase(n, _norm(p)) for p in never or ())
 
 
-def choose_transition(transitions, path, current, target, never=()):
+def walk_route(path, target, never=(), allow_never=False):
+    """Append a never-listed terminal target only when explicitly allowed."""
+    route = list(path)
+    if any(_norm(target) == _norm(status) for status in route):
+        return route, False
+    if allow_never and is_banned(target, never):
+        route.append(target)
+        return route, True
+    return route, False
+
+
+def read_only_reason(config_read_only, env_value="", allow_write=False):
+    """Return the active read-only source; an environment lock always wins."""
+    if env_value not in ("", "0"):
+        return "JIRA_FLOW_READ_ONLY"
+    if config_read_only and not allow_write:
+        return "config read_only"
+    return ""
+
+
+def choose_transition(transitions, path, current, target, never=(), allow_banned_target=False):
     """One forward step along `path` (ordered status names) from `current` toward `target`.
 
-    Returns (transition | None, reason). Never picks a transition whose name or target
-    status is in `never`, never moves backward and never overshoots `target`."""
+    Returns (transition | None, reason). Never picks a transition whose name is in `never`
+    or whose target status is in `never`, unless that status is the explicitly allowed target.
+    Never moves backward or overshoots `target`."""
     order = [_norm(s) for s in path]
     cur, tgt = _norm(current), _norm(target)
     if tgt not in order:
@@ -181,7 +202,9 @@ def choose_transition(transitions, path, current, target, never=()):
     best = None
     for t in transitions:
         to = _norm(t["to"]["name"])
-        if is_banned(to, never) or is_banned(t["name"], never) or to not in order:
+        if (is_banned(t["name"], never) or
+            (is_banned(to, never) and not (allow_banned_target and to == tgt)) or
+            to not in order):
             continue
         idx = order.index(to)
         if ci < idx <= ti and (best is None or idx < order.index(_norm(best["to"]["name"]))):

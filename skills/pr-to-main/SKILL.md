@@ -20,7 +20,7 @@ Use this prompt, with `<REPO_ROOT>` (the current repo root) and any scope hint f
 ```
 Ship the pending changes of <REPO_ROOT> to its default branch as a reviewed, merged PR, autonomously.
 Read and follow, in full, the procedure file `PROCEDURE.md` that sits next to this skill's SKILL.md
-(~/.copilot/skills/pr-to-main/PROCEDURE.md, or ~/.claude/skills/pr-to-main/PROCEDURE.md).
+(give the agent its absolute path: the folder this SKILL.md was loaded from, plus `PROCEDURE.md`).
 Scope: <everything pending | the user's scope hint>.
 ```
 

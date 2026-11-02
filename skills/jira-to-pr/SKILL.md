@@ -26,7 +26,7 @@ One Jira issue (Story or Bug/TIR) → one PR in the current repo → merged. It 
   ```
   Implement Jira issue <KEY> in <REPO_ROOT> and drive it to a merged PR, autonomously.
   Read and follow PROCEDURE.md next to the jira-to-pr skill's SKILL.md
-  (~/.copilot/skills/jira-to-pr/PROCEDURE.md or ~/.claude/skills/jira-to-pr/PROCEDURE.md),
+  (give the agent its absolute path: the folder this SKILL.md was loaded from, plus `PROCEDURE.md`),
   starting at Phase 3. State, digest and the approved plan are in <REPO_ROOT>/.jira-flow/<KEY>/.
   ```
 

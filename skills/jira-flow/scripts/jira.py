@@ -47,8 +47,11 @@ Write commands (print a plan and change NOTHING unless --yes is given):
     walk <KEY...> [--to "<status>" | --event started|plan_approved|fixed|pr_opened|merged] [--fields-file F.json]
                                             forward along the profile's path; fills screen
                                             fields from F.json ({"Field name": value}); stops
-                                            on a missing required field; never takes a
-                                            `never` status; no-op when already there or past
+                                            on a missing required field; `--allow-never` may
+                                            append one never-listed final target after the path
+                                            when explicitly authorized
+    --allow-write                            override config read_only for this invocation;
+                                             JIRA_FLOW_READ_ONLY=1 remains a hard lock
     set <KEY...> --field <id|name> --value V
     bulk --jql "<jql>" --do assign|comment|transition|walk|set [that command's flags]
 
@@ -78,7 +81,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import jira_text as jt  # noqa: E402
 
 BOOL_FLAGS = {"yes", "full", "all", "force-owner", "fields", "md", "raw", "resolved", "no-attachments",
-              "force", "allow-never", "no-desc"}
+              "force", "allow-never", "allow-write", "no-desc"}
 DEFAULT_PROFILES = {
     "story": {"issue_types": ["Story", "Enabler Story", "User Story"], "fields": {"ac": "Acceptance Criteria"}},
     "defect": {"issue_types": ["Bug", "Defect", "Defects", "re:^TIR\\b"], "fields": {}},
@@ -129,8 +132,7 @@ def load_config():
 CFG, CFG_PATH = load_config()
 BASE = (os.environ.get("JIRA_URL") or CFG.get("url") or "").rstrip("/")
 API = BASE + "/rest/api/2"
-READ_ONLY = ("JIRA_FLOW_READ_ONLY" if os.environ.get("JIRA_FLOW_READ_ONLY", "") not in ("", "0")
-             else "config read_only" if CFG.get("read_only") else "")
+READ_ONLY = jt.read_only_reason(CFG.get("read_only"), os.environ.get("JIRA_FLOW_READ_ONLY", ""))
 
 
 def token():
@@ -361,13 +363,15 @@ class Tool:
         if not target:
             print("%s: profile %r maps no status to event %r; nothing to do" % (k, pname, event or "merged"))
             return
+        never = prof.get("never", [])
+        route, allow_terminal = jt.walk_route(path, target, never, bool(self.f.get("allow-never")))
         provided = json.loads(Path(self.f["fields-file"]).read_text(encoding="utf-8")) if self.f.get("fields-file") else {}
         cur = iss["status"]["name"]
-        if jt.is_banned(cur, prof.get("never", [])):
+        if jt.is_banned(cur, never):
             print('%s: "%s" is a final status for this profile; nothing to do' % (k, cur))
             return
         req_cfg = prof.get("required_fields") or {}
-        gaps = jt.mandatory_on_route(req_cfg, path, cur, target, provided)
+        gaps = jt.mandatory_on_route(req_cfg, route, cur, target, provided)
         if gaps:
             self.plan('%s: %s --> %s' % (k, cur, target))
             print("     mandatory (profile required_fields), missing or empty in --fields-file:")
@@ -376,7 +380,8 @@ class Tool:
             return
         for _ in range(len(path) + 2):
             ts = self.j.call("GET", "/issue/%s/transitions?expand=transitions.fields" % k)["transitions"]
-            t, why = jt.choose_transition(ts, path, cur, target, prof.get("never", []))
+            t, why = jt.choose_transition(ts, route, cur, target, never,
+                                          allow_banned_target=allow_terminal and _norm_eq(cur, path[-1]))
             if t is None:
                 if why == "already there" or why.startswith("already past"):
                     print('%s: "%s" (%s)' % (k, cur, why))
@@ -899,11 +904,17 @@ def offline(cmd, flags, pos):
 
 
 def main():
+    global READ_ONLY
     argv = sys.argv[1:]
     if not argv or argv[0] in ("help", "-h", "--help"):
         print(__doc__)
         return
     cmd, (flags, pos) = argv[0], parse(argv[1:])
+    env_read_only = os.environ.get("JIRA_FLOW_READ_ONLY", "")
+    if flags.get("allow-write"):
+        if env_read_only not in ("", "0"):
+            die("JIRA_FLOW_READ_ONLY is set; --allow-write cannot override the environment lock")
+    READ_ONLY = jt.read_only_reason(CFG.get("read_only"), env_read_only, bool(flags.get("allow-write")))
     if offline(cmd, flags, pos):
         return
     t = Tool(Jira(token()), flags, pos)

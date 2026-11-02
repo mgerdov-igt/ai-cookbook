@@ -7,13 +7,13 @@ description: Read and update Jira Server/Data Center issues from an agent with a
 
 One script, `jira.py` (Python 3.8+, standard library only), plus `jira_text.py` (pure helpers). Everything project-specific lives in the repo's `.jira-flow.json`.
 
-**Script location:** `<repo>/tools/jira/jira.py` if the repo carries a synced copy, else `~/.copilot/skills/jira-flow/scripts/jira.py` (or `~/.claude/...`). Run it from the repo root, so it finds `.jira-flow.json` and the token file. `python3 jira.py` with no arguments prints the full usage.
+**Script location:** `<repo>/tools/jira/jira.py` if the repo carries a synced copy, else `scripts/jira.py` next to this SKILL.md (the folder this skill was loaded from). Run it from the repo root, so it finds `.jira-flow.json` and the token file. `python3 jira.py` with no arguments prints the full usage.
 
 ## Rules
 
-1. **Writes are dry runs.** Run every write once without `--yes`, read the `PLAN` lines, then repeat with `--yes` only if the user asked for that change. `"read_only": true` in the config (or `JIRA_FLOW_READ_ONLY=1`) disables writes entirely.
+1. **Writes are dry runs.** Run every write once without `--yes`, read the `PLAN` lines, then repeat with `--yes` only if the user asked for that change. `"read_only": true` blocks writes unless the invocation includes `--allow-write`; writes still need `--yes`. `JIRA_FLOW_READ_ONLY=1` is a hard lock that cannot be overridden.
 2. **Ownership.** Writes skip issues assigned to someone else (`SKIP`). Use `--force-owner` only when the user says so.
-3. **Never statuses.** A profile's `never` list (wildcards allowed, for example `Closed*`) is refused by `walk` and by `transition` unless `--allow-never` is given with the user's explicit OK.
+3. **Never statuses.** A profile's `never` list (wildcards allowed, for example `Closed*`) is refused by `walk` and by `transition` unless `--allow-never` is given with the user's explicit OK. For a terminal status after the normal path, `walk KEY --to "Done" --allow-never` follows the configured path and then attempts that one final live transition; it does not unban other statuses or transition names.
 4. **Token.** From `JIRA_TOKEN`, or the gitignored notes file named in the config (`ai-jira-token: <value>`). Never print it, never paste it into a command line or a comment.
 5. **Text is wiki markup.** Jira Server renders wiki markup, not Markdown. `comment --md`, `upsert-comment` and `md2wiki` convert. Avoid emoji: Jira Server on MySQL utf8 may reject 4-byte characters.
 
@@ -35,6 +35,7 @@ If attachment downloads come back as a login page (SSO or 2FA plugins block toke
 | Everything about one issue, cached | `digest KEY [--window HH:MM-HH:MM]` |
 | My open work | `mine [--project P] [--pi V] [--type T] [--status S] [--text W] [--jql J] [--max N]`: loose names allowed ("Terminal App", "PI 3"); it prints what they matched |
 | Move forward along the workflow | `walk KEY --event started\|plan_approved\|fixed\|pr_opened\|merged` or `--to "<status>"`; screen fields from `--fields-file f.json` |
+| Explicitly authorized terminal exception | `walk KEY --to "Done" --allow-never [--allow-write] [--yes]` |
 | See what a transition requires | `transitions KEY --fields` (`*` = required) |
 | One edited-in-place bot comment | `upsert-comment KEY --marker questions\|plan\|status --title T --file f.md` |
 | Human answers to it | `replies KEY --marker questions` (prints `APPROVED` for a plan approval) |
@@ -42,6 +43,6 @@ If attachment downloads come back as a login page (SSO or 2FA plugins block toke
 | Link a PR | `remotelink KEY --url <PR url> --title "PR #n" [--resolved]` |
 | New project setup | `init --project P --sample KEY --out .jira-flow.json` |
 
-`walk` moves one step at a time toward the target along the profile's `path`, never backward, never past the target, never into a `never` status. It stops and names any required screen field missing from `--fields-file` (keys are field names or ids). Run `walk` once without `--yes` to see the first step. It is a no-op when the issue is already at or past the target.
+`walk` moves one step at a time toward the target along the profile's `path`, never backward or past the target. It never enters a `never` status unless `--allow-never` explicitly authorizes that target. It stops and names any required screen field missing from `--fields-file` (keys are field names or ids). Run `walk` once without `--yes` to preview the first live step and validate required fields for the route. It is a no-op when the issue is already at or past the target.
 
 Configuration schema and setup: [README.md](README.md). End-to-end issue-to-merged-PR automation: the `jira-to-pr` skill.
