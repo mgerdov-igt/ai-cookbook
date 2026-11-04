@@ -2,6 +2,8 @@
 
 Install these first before any tool-specific setup.
 
+Prefer fewer manual steps? [TauShell](https://github.com/ma99us/tau-shell) can install PowerShell 7 and the AI tools for you. See [TauShell setup](./tau-shell/SETUP.md).
+
 ## 0) Install or verify WinGet
 
 On Windows 11, WinGet is provided by App Installer.

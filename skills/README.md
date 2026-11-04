@@ -10,7 +10,7 @@ Keep `SKILL.md` focused on the task, not one AI tool. Avoid tool-specific slash 
 
 ## Use from TauShell
 
-[TauShell](https://github.com/ma99us/tau-shell) reads `tau-shell.yaml` at the repo root. Its `skills` list names the skills TauShell enables by default, and its `presets` list adds prompt presets. TauShell loads the skills into Claude Code and Copilot CLI sessions with `--plugin-dir`, so nothing is copied into `~/.claude` or `~/.copilot`. Skill instructions must refer to sibling files relative to their own folder, never to a fixed home-folder path.
+[TauShell](https://github.com/ma99us/tau-shell) reads [`tau-shell.yaml`](../tau-shell.yaml) at the repo root; see [TauShell setup](../tools/tau-shell/SETUP.md). Its `skills` list names every skill TauShell offers, so add each new skill there or TauShell cannot see it. Its `presets` list adds prompt presets, including the [prompt templates](../knowledge/PROMPT-TEMPLATES.md). TauShell loads the skills into Claude Code and Copilot CLI sessions with `--plugin-dir`, so nothing is copied into `~/.claude` or `~/.copilot`. Skill instructions must refer to sibling files relative to their own folder, never to a fixed home-folder path.
 
 ## Install for Personal Use
 

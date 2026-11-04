@@ -2,6 +2,8 @@
 
 Use this when you want the shortest useful starting point for your kind of work.
 
+For any role, [TauShell](https://github.com/ma99us/tau-shell) can replace the manual prerequisite and tool installs. See [TauShell setup](tools/tau-shell/SETUP.md).
+
 ## Backend engineer
 
 Best first tool:

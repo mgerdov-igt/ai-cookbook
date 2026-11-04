@@ -1,6 +1,8 @@
 version: 1
-# Read by TauShell (github.com/ma99us/tau-shell). Optional for every other consumer.
-# skills: the skills TauShell enables by default from this repo.
+# Read by TauShell (https://github.com/ma99us/tau-shell). Optional for every other consumer.
+# Guide: tools/tau-shell/SETUP.md
+# skills: every skill TauShell offers from this repo. Only listed skills are exposed,
+# so add a line here when you add a folder under skills/.
 skills:
   - windows-screenshot
   - android-screenshot
@@ -8,8 +10,15 @@ skills:
   - pr-to-main
   - plan-auto-work
   - repository-cleanup
+  - repository-governance
+  - flutter-upgrade
+  - copilot-quota-forecast
+  - jira-flow
+  - jira-to-pr
 # presets: prompt presets shown in TauShell; same fields as TauShell presets.yaml.
 # `skill` hides a preset unless that skill is available to the session.
+# Text stays on one line because a newline would submit the prompt early.
+# Template presets keep <placeholders> and submit: false so you fill them in first.
 presets:
   - name: Ship to main
     text: Use the pr-to-main skill to ship all pending changes
@@ -27,3 +36,18 @@ presets:
     text: Use the repository-cleanup skill to propose a safe cleanup pass
     skill: repository-cleanup
     submit: true
+  - name: Template - Bug investigation
+    text: "Goal: Find the root cause of <bug>. Context: <relevant files, logs, recent changes>. Do not: Change unrelated files or guess without evidence. Done when: You can explain the cause and propose the smallest safe fix"
+    submit: false
+  - name: Template - Feature implementation
+    text: "Goal: Implement <feature>. Context: <files, stack, constraints>. Do not: Change public behavior outside this feature. Done when: Code is updated, tests pass, and changed files are summarized"
+    submit: false
+  - name: Template - Refactor with safety checks
+    text: "Goal: Refactor <area> for <reason>. Context: <files, architecture notes, tests>. Do not: Change external behavior or delete files without a dry run. Done when: The diff is reviewable, behavior is preserved, and verification steps are listed"
+    submit: false
+  - name: Template - Test generation
+    text: "Goal: Add tests for <module or behavior>. Context: <test framework, current gaps, target files>. Do not: Rewrite production code unless required for testability. Done when: New tests cover the intended behavior and pass locally"
+    submit: false
+  - name: Template - Incident review
+    text: "Goal: Investigate <incident or symptom>. Context: <logs, timeline, affected services, recent deploys>. Do not: Assume the first suspicious signal is the root cause. Done when: You provide likely causes, confidence level, missing evidence, and safest next checks"
+    submit: false

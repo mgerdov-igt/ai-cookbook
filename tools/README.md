@@ -32,6 +32,8 @@ Setup, tool choices, commands, and fixes for each AI tool live here. Shared advi
 
 ## Tool Guides
 
+- [TauShell](./tau-shell/SETUP.md): optional desktop app ([GitHub](https://github.com/ma99us/tau-shell)) that installs the tools below, keeps sessions, and loads cookbook skills and prompts
+
 - [GSD Pi](./gsd-pi/OVERVIEW.md): [setup](./gsd-pi/SETUP.md), [commands](./gsd-pi/COMMANDS.md), [examples](./gsd-pi/EXAMPLES.md), [troubleshooting](./gsd-pi/TROUBLESHOOTING.md), [cost control](./gsd-pi/COST-CONTROL.md)
 - [GitHub Copilot CLI](./copilot-cli/OVERVIEW.md): [setup](./copilot-cli/SETUP.md), [commands](./copilot-cli/COMMANDS.md), [examples](./copilot-cli/EXAMPLES.md), [troubleshooting](./copilot-cli/TROUBLESHOOTING.md), [cost control](./copilot-cli/COST-CONTROL.md)
 - [Claude Code](./claude-code/OVERVIEW.md): [setup](./claude-code/SETUP.md), [commands](./claude-code/COMMANDS.md), [examples](./claude-code/EXAMPLES.md), [troubleshooting](./claude-code/TROUBLESHOOTING.md), [cost control](./claude-code/COST-CONTROL.md)

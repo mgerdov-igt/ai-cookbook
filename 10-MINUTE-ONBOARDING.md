@@ -7,6 +7,10 @@ If you are still deciding which tool to use, go to [Quickstart](./QUICKSTART.md)
 
 ## 1) Prepare the machine
 
+Fastest option: use [TauShell](https://github.com/ma99us/tau-shell). It installs PowerShell 7 and your AI tool after you confirm. Follow [TauShell setup](tools/tau-shell/SETUP.md), then skip to step 3.
+
+Or do it by hand:
+
 1. Install the tools in [Prerequisite tools](tools/PREREQUISITES-TOOLS.md).
 2. Apply [PowerShell environment setup](tools/powershell/SETUP.md).
 3. Open a new PowerShell 7 session.

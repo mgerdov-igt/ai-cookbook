@@ -7,6 +7,7 @@ Practical, concise guidance for engineers who build software with AI tools. Star
 Start with [QUICKSTART.md](./QUICKSTART.md). It helps you choose a tool and points to the next steps.
 
 Then use:
+- [TauShell setup](./tools/tau-shell/SETUP.md): the [TauShell](https://github.com/ma99us/tau-shell) desktop app installs the tools and loads this cookbook's skills and prompts for you
 - [AI tools](./tools/README.md): setup, commands, examples, and fixes
 - [Shared guidance](./knowledge/README.md): good practices, prompts, and team workflows
 - [Skills](./skills/README.md): reusable instructions and scripts for compatible AI tools

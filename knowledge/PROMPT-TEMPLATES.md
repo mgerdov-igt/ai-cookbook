@@ -51,6 +51,8 @@ Done when: You provide likely causes, confidence level, missing evidence, and sa
 
 ## Use with any tool
 
+In [TauShell](https://github.com/ma99us/tau-shell), the templates above appear in the Prompts menu as `Template - ...` entries (see [TauShell setup](../tools/tau-shell/SETUP.md)). When you change a template here, update the matching `presets` entry in [`tau-shell.yaml`](../tau-shell.yaml).
+
 After the template, add:
 - Verification: <commands or checks>
 - Constraints: <branch, files, approval limits>
