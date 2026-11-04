@@ -1,0 +1,29 @@
+version: 1
+# Read by TauShell (github.com/ma99us/tau-shell). Optional for every other consumer.
+# skills: the skills TauShell enables by default from this repo.
+skills:
+  - windows-screenshot
+  - android-screenshot
+  - github-pr-flow
+  - pr-to-main
+  - plan-auto-work
+  - repository-cleanup
+# presets: prompt presets shown in TauShell; same fields as TauShell presets.yaml.
+# `skill` hides a preset unless that skill is available to the session.
+presets:
+  - name: Ship to main
+    text: Use the pr-to-main skill to ship all pending changes
+    skill: pr-to-main
+    submit: true
+  - name: PR readiness
+    text: Use the github-pr-flow skill to check this PR for merge readiness
+    skill: github-pr-flow
+    submit: true
+  - name: Screenshot app
+    text: Use the windows-screenshot skill to capture the app window
+    skill: windows-screenshot
+    submit: false
+  - name: Cleanup proposal
+    text: Use the repository-cleanup skill to propose a safe cleanup pass
+    skill: repository-cleanup
+    submit: true
