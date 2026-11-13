@@ -8,6 +8,7 @@ Advice and work methods that apply to more than one AI tool live here.
 - [Failure recovery](./FAILURE-RECOVERY.md)
 - [Prompt templates](./PROMPT-TEMPLATES.md)
 - [Session management](./SESSION-MANAGEMENT.md)
+- [Writing a portable skill](./WRITING-SKILLS.md)
 
 ## Repository Delivery
 

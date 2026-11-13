@@ -5,7 +5,7 @@
 - [Prerequisite tools](../PREREQUISITES-TOOLS.md)
 - Python 3.11 or later
 - `uv` package manager
-- A supported AI coding agent; see the official [integration list](https://github.github.io/spec-kit/reference/integrations.html)
+- A supported AI coding agent; see the official [integration list](https://github.github.io/spec-kit/integrations/index.html)
 
 Install `uv` using its [official Windows instructions](https://docs.astral.sh/uv/getting-started/installation/).
 
@@ -45,9 +45,9 @@ Start your AI coding tool in the repo. Run `/speckit-constitution` to record the
 - [Spec Kit overview](./OVERVIEW.md)
 - [Spec Kit commands](./COMMANDS.md)
 - [Spec Kit examples](./EXAMPLES.md)
-- [Existing-project setup guide](https://github.github.io/spec-kit/guides/existing-projects.html)
+- [Existing-project setup guide](https://github.github.io/spec-kit/how-to/existing-projects.html)
 
 ## Official docs
 
 - [Installation](https://github.github.io/spec-kit/installation.html)
-- [Existing projects](https://github.github.io/spec-kit/guides/existing-projects.html)
+- [Existing projects](https://github.github.io/spec-kit/how-to/existing-projects.html)

@@ -84,6 +84,8 @@ They save tokens by:
 
 3. Add a minimal prompt/command wrapper only if needed.
 
+For the full checklist, see [Writing a portable skill](../knowledge/WRITING-SKILLS.md). For script style, see [PowerShell scripting rules](../tools/powershell/SCRIPTING.md).
+
 ## Write a Clear Skill Description
 
 Good descriptions are concrete and match real user phrasing.
@@ -135,6 +137,8 @@ Before running any skill, verify:
 | [flutter-upgrade](./flutter-upgrade/SKILL.md) | Flutter/Dart projects | Flutter/Dart toolchain, package manager, repository CI guidance | Upgrade plan and verification report |
 | [plan-auto-work](./plan-auto-work/SKILL.md) | Any repository and supported OS | Approved plan and repository verification tools | Implemented plan, verified work, and parked-step report |
 | [plain-language](./plain-language/SKILL.md) | Any AI tool and OS | None | The last reply restated in plain words, with paths, commands, and numbers unchanged |
+| [docs-sync-audit](./docs-sync-audit/SKILL.md) | Any repository; link check needs PowerShell 7 | Repository docs and source, `pwsh` | Read-only docs drift report with P0-P3 findings and a link and anchor check |
+| [git-commit](./git-commit/SKILL.md) | Any git repository | Git | Related changes staged and committed with a Conventional Commits message; no push |
 
 ## Quick decision table
 
@@ -152,6 +156,8 @@ Before running any skill, verify:
 | Upgrade Flutter, Dart, or pub packages | [flutter-upgrade](./flutter-upgrade/SKILL.md) | "Plan a safe Flutter SDK upgrade" | Updating only the obvious SDK pin or sharing credentials in logs |
 | Implement an approved plan autonomously | [plan-auto-work](./plan-auto-work/SKILL.md) | "Implement the plan end to end" | Starting without an approved plan or silently changing models |
 | A reply was too dense or full of jargon | [plain-language](./plain-language/SKILL.md) | "I did not follow that, say it in plain English" | Asking for a new, longer answer |
+| Check docs against code, commands, and links | [docs-sync-audit](./docs-sync-audit/SKILL.md) | "Are the docs stale after this change?" | `repository-governance`, which decides what to keep or merge, not whether claims are true |
+| Commit changes | [git-commit](./git-commit/SKILL.md) | "Commit this with a conventional message" | `git add -A` over unrelated changes, or pushing without being asked |
 | Browser page screenshot | Browser screenshot tool | "Screenshot this web page in the browser" | Do not use `windows-screenshot` for browser pages |
 
 ## Reusable skill template

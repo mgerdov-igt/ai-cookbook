@@ -16,6 +16,8 @@ skills:
   - jira-flow
   - jira-to-pr
   - plain-language
+  - docs-sync-audit
+  - git-commit
 # presets: prompt presets shown in TauShell; same fields as TauShell presets.yaml.
 # `skill` hides a preset unless that skill is available to the session.
 # Text stays on one line because a newline would submit the prompt early.
@@ -41,6 +43,14 @@ presets:
     text: Use the plain-language skill to restate your last reply in plain words
     skill: plain-language
     submit: true
+  - name: Docs sync audit
+    text: Use the docs-sync-audit skill to check this repository's docs for drift
+    skill: docs-sync-audit
+    submit: true
+  - name: Commit changes
+    text: Use the git-commit skill to commit my changes with a conventional message
+    skill: git-commit
+    submit: false
   - name: Template - Bug investigation
     text: "Goal: Find the root cause of <bug>. Context: <relevant files, logs, recent changes>. Do not: Change unrelated files or guess without evidence. Done when: You can explain the cause and propose the smallest safe fix"
     submit: false

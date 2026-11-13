@@ -47,6 +47,10 @@ Prioritize clarity and speed to first success.
 - Prefer one-screen pages where practical.
 - If a page starts getting dense, split it instead of expanding it indefinitely.
 - Each page should clearly answer: what do I run, how do I verify, what can go wrong?
+- Create and edit files with your tool's file create and edit feature. Do not write file content through the shell with `Set-Content`, `Out-File`, `>`, or here-strings. See [PowerShell scripting rules](./tools/powershell/SCRIPTING.md).
+- Write PowerShell scripts as in [PowerShell scripting rules](./tools/powershell/SCRIPTING.md). Write skills as in [Writing a portable skill](./knowledge/WRITING-SKILLS.md).
+- Commit with [git-commit](./skills/git-commit/SKILL.md) rules: one logical change per commit and a Conventional Commits message. Do not push unless asked.
+- After a change that renames, moves, or removes a page, skill, command, or setting, run the link and name check: `pwsh -NoProfile -File skills\docs-sync-audit\scripts\Test-DocsLinks.ps1 -CheckSkills`. Use [docs-sync-audit](./skills/docs-sync-audit/SKILL.md) for a full drift check.
 
 ## Required cross-linking
 
@@ -57,6 +61,9 @@ When adding or changing pages:
 - Ensure [tools/PREREQUISITES-TOOLS](./tools/PREREQUISITES-TOOLS.md) is referenced by setup pages.
 - Ensure [knowledge/README](./knowledge/README.md) lists shared advice and work guides.
 - Ensure [skills/README](./skills/README.md) explains the shared Agent Skills format and global installation.
+- Ensure [knowledge/WRITING-SKILLS](./knowledge/WRITING-SKILLS.md) and [tools/powershell/SCRIPTING](./tools/powershell/SCRIPTING.md) stay linked from the skills guide and the hub pages.
+- Ensure [tau-shell.yaml](./tau-shell.yaml) lists every skill under `skills/`.
+- Keep [THIRD-PARTY-NOTICES](./THIRD-PARTY-NOTICES.md) current when adapting material from another project.
 - Add links between setup, commands, and examples for the same tool.
 
 ## External references

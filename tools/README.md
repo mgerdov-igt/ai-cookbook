@@ -16,6 +16,7 @@ Setup, tool choices, commands, and fixes for each AI tool live here. Shared advi
 - [WSL2 on Windows](./wsl/OVERVIEW.md): setup, networking, and certificates
 - [Task-to-tool matrix](./TASK-TOOL-MATRIX.md)
 - [PowerShell basics](./powershell/BASICS.md)
+- [PowerShell scripting rules](./powershell/SCRIPTING.md): safe, readable scripts for skills and automation
 - [PowerShell bootstrap](./powershell/BOOTSTRAP.md)
 
 ## Shared Guidance
@@ -25,6 +26,7 @@ Setup, tool choices, commands, and fixes for each AI tool live here. Shared advi
 - [Failure recovery](../knowledge/FAILURE-RECOVERY.md)
 - [Prompt templates](../knowledge/PROMPT-TEMPLATES.md)
 - [Session management](../knowledge/SESSION-MANAGEMENT.md)
+- [Writing a portable skill](../knowledge/WRITING-SKILLS.md)
 - [Repeatable repo workflow](../knowledge/REPO-WORKFLOW.md)
 - [Spec-driven feature workflow](../knowledge/SPEC-DRIVEN-WORKFLOW.md)
 - [Knowledge structure](../knowledge/KNOWLEDGE-STRUCTURE.md)

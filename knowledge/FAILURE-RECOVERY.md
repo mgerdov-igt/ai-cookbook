@@ -89,6 +89,22 @@ Fastest recovery:
 3. Check for managed-browser or certificate restrictions.
 4. Keep notes on what is different before retrying.
 
+## 7) A file is garbled or truncated after the tool wrote it
+
+Symptoms:
+- A new file has broken quotes, missing lines, or stray characters
+- A file ends in the middle of a line
+- The tool wrote the file with `Set-Content`, `Out-File`, `>`, or a here-string
+
+Fastest recovery:
+1. Check the damage with `git diff` or `git status`.
+2. Restore the file: `git restore <path>` for a tracked file, or delete a new one.
+3. Ask the tool to write the file with its file create or edit feature, not a shell command.
+4. Keep the shell for running programs and reading output.
+5. Check the result with `git diff` before you commit.
+
+See [PowerShell scripting rules](../tools/powershell/SCRIPTING.md#let-the-tool-write-files-not-the-shell).
+
 ## Good fallback rule
 
 If you lose more than 10 minutes on setup:

@@ -45,7 +45,7 @@ If the user gives no scope, propose one and start with the read-only audit (code
 - Feature work or a small, already-scoped fix: use a normal implementation workflow.
 - Git hygiene or removing generated files from disk: use `repository-cleanup`.
 - Implementing an already-approved plan end to end: use `plan-auto-work`.
-
+- Checking whether doc claims still match code, commands, and links: use `docs-sync-audit`. This skill decides which docs to keep, merge, or archive.
 ## Output
 
 - Audits: one report with scope, coverage limits, `ARCH-*` or `DOC-*` findings, and a prioritized plan.

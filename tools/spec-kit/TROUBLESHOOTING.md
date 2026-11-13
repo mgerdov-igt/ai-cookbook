@@ -11,7 +11,7 @@
 
 - Confirm initialization completed successfully with the intended `--integration` key.
 - Check the generated integration files and restart the coding-agent session.
-- Use the official [integration reference](https://github.github.io/spec-kit/reference/integrations.html) to confirm supported integrations and invocation syntax.
+- Use the official [integration reference](https://github.github.io/spec-kit/integrations/index.html) to confirm supported integrations and invocation syntax.
 
 ## Initialization reports existing files
 

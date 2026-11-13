@@ -25,4 +25,4 @@ Use the skills in order as needed. Review each file before continuing:
 7. `/speckit-implement` — execute reviewed tasks
 8. `/speckit-converge` — check for work that is still missing
 
-Skill names can vary by AI coding tool. See the official [integration reference](https://github.github.io/spec-kit/reference/integrations.html#command-invocation).
+Skill names can vary by AI coding tool. See the official [integration reference](https://github.github.io/spec-kit/integrations/index.html).
