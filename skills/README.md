@@ -134,6 +134,7 @@ Before running any skill, verify:
 | [repository-governance](./repository-governance/SKILL.md) | Any repository and supported OS | Repository instructions, code and docs access, and local verification tools | Read-only architecture or docs audit with `ARCH-*`/`DOC-*` findings, then approved, verified refactors or doc reconciliation |
 | [flutter-upgrade](./flutter-upgrade/SKILL.md) | Flutter/Dart projects | Flutter/Dart toolchain, package manager, repository CI guidance | Upgrade plan and verification report |
 | [plan-auto-work](./plan-auto-work/SKILL.md) | Any repository and supported OS | Approved plan and repository verification tools | Implemented plan, verified work, and parked-step report |
+| [plain-language](./plain-language/SKILL.md) | Any AI tool and OS | None | The last reply restated in plain words, with paths, commands, and numbers unchanged |
 
 ## Quick decision table
 
@@ -150,6 +151,7 @@ Before running any skill, verify:
 | Audit or clean up project documentation | [repository-governance](./repository-governance/SKILL.md) | "Audit our docs for stale and duplicate content" | Deleting old docs before moving their unique decisions and lessons |
 | Upgrade Flutter, Dart, or pub packages | [flutter-upgrade](./flutter-upgrade/SKILL.md) | "Plan a safe Flutter SDK upgrade" | Updating only the obvious SDK pin or sharing credentials in logs |
 | Implement an approved plan autonomously | [plan-auto-work](./plan-auto-work/SKILL.md) | "Implement the plan end to end" | Starting without an approved plan or silently changing models |
+| A reply was too dense or full of jargon | [plain-language](./plain-language/SKILL.md) | "I did not follow that, say it in plain English" | Asking for a new, longer answer |
 | Browser page screenshot | Browser screenshot tool | "Screenshot this web page in the browser" | Do not use `windows-screenshot` for browser pages |
 
 ## Reusable skill template

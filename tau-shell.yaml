@@ -15,6 +15,7 @@ skills:
   - copilot-quota-forecast
   - jira-flow
   - jira-to-pr
+  - plain-language
 # presets: prompt presets shown in TauShell; same fields as TauShell presets.yaml.
 # `skill` hides a preset unless that skill is available to the session.
 # Text stays on one line because a newline would submit the prompt early.
@@ -35,6 +36,10 @@ presets:
   - name: Cleanup proposal
     text: Use the repository-cleanup skill to propose a safe cleanup pass
     skill: repository-cleanup
+    submit: true
+  - name: Plain language
+    text: Use the plain-language skill to restate your last reply in plain words
+    skill: plain-language
     submit: true
   - name: Template - Bug investigation
     text: "Goal: Find the root cause of <bug>. Context: <relevant files, logs, recent changes>. Do not: Change unrelated files or guess without evidence. Done when: You can explain the cause and propose the smallest safe fix"
