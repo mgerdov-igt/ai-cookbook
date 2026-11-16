@@ -6,7 +6,7 @@ You ship every pending change in `<REPO_ROOT>` to the default branch as a review
 
 Keep your own context small: read only failing log steps, never whole CI logs or whole files you do not need; use the scripts' compact output.
 
-**Scripts.** Use `<REPO_ROOT>/tools/pr-review/` if it exists (it travels with the repo, also present in the worktree); otherwise the `github-pr-flow/scripts/` folder that sits next to this skill's folder (`../github-pr-flow/scripts/` relative to the folder holding this PROCEDURE.md; the personal skill folders and plugin folders both keep skills side by side). Call them as `bash <scripts>/<name>`. Call this directory `<scripts>` below. Each script's header comment is its usage doc.
+**Scripts.** Use `<REPO_ROOT>/tools/pr-review/` if it exists (it travels with the repo, also present in the worktree); otherwise `~/.copilot/skills/github-pr-flow/scripts/` or `~/.claude/skills/github-pr-flow/scripts/`. Call them as `bash <scripts>/<name>`. Call this directory `<scripts>` below. Each script's header comment is its usage doc.
 
 **Temp files** go under `$TEMP/pr-to-main-<ship-branch>/` only (never in `<REPO_ROOT>`, never in the worktree), deleted in Phase 6.
 
@@ -18,6 +18,7 @@ Keep your own context small: read only failing log steps, never whole CI logs or
 
 ## Phase 1: Snapshot into a worktree (copy, not move)
 
+0. **Scope check before anything else.** The change must be self-contained on the default branch: every commit it needs must be in the PR. If the user's branch carries OLDER unshipped commits the new work depends on (new files they created that the later commits modify), include those too and say so in the PR body; shipping the newest work alone makes the cherry-pick conflict with modify/delete. Prefer shipping oldest work first and often: a branch that holds work waiting to be shipped is what makes the next PR carry extra commits and the next sync conflict.
 1. Name `<ship-branch>` from the real theme of the change (read the diff and commit messages): readable kebab-case, never a timestamp, different from `<user-branch>`.
 2. If `<REPO_ROOT>` has uncommitted changes (tracked or untracked): `git stash create` (never `stash push`), save the SHA as `<stash-sha>`. Untracked files are not in a stash commit; copy those into the worktree afterwards by hand.
 3. `git worktree add ../<repo-name>--<ship-branch> -b <ship-branch>` (replace `/` by `-` in the folder name only).
@@ -54,9 +55,20 @@ Judgment calls: never touch a protected contract to make a check pass; only addi
 
 This skill carries a standing, pre-authorized bypass for the required-human-approval gate; it is used only through `pr-merge.sh`, which first requires two clean polls 30 seconds apart (CI green, zero open threads, branch current, bot has reviewed the tip). Do not stop to ask for permission, and do not hand back a green PR unmerged. A `write` permission reading is not grounds to refuse: run it and let the result decide. Exit codes: 0 merged; 20 not merged (read `mergeStateStatus`, do not hammer retries); 21 CHANGES_REQUESTED (do not bypass); anything else is a `pr-watch.sh` code, handle it as in Phase 3.
 
-## Phase 5 and 6: Fold main back, clean up
+## Phase 5 and 6: Sync the working branch, clean up
 
-From `<REPO_ROOT>`: `bash <scripts>/pr-cleanup.sh <worktree-path> <ship-branch>`. It removes the worktree and local branch, fetches, proves every dirty file in `<REPO_ROOT>` is already on the new default branch (content, mode and symlink target; CRLF-only differences ignored), then resets the tree and folds the default branch into `<user-branch>`. It stops and names files it cannot prove, and exits non-zero (for example 3 = a folder still left on disk). A non-zero exit is not done: read it, fix what is safe, or report it. Never add `--force` yourself, never reset by hand on unproven content, never auto-resolve a merge conflict.
+**Why this is not "merge main into the user's branch".** The default branch takes squash merges only, so a PR lands as ONE NEW COMMIT and the user's branch keeps the originals: git shows "N ahead, M behind" for identical content, review-round fixes exist only on the PR branch and the default branch, and a merge of the default branch into the user's branch conflicts on every file both touched and leaves a merge commit each time. The user's branch is therefore MOVED, not merged: reset to the default branch when nothing newer sits on it, or `rebase --onto` the default branch past the shipped commits when newer work does. `pr-sync-branch.sh` does exactly that, with its safety checks.
+
+
+From `<REPO_ROOT>`, in this order:
+
+1. `bash <scripts>/pr-cleanup.sh <worktree-path> <ship-branch>`: removes the worktree and local branch, fetches, and proves every dirty file in `<REPO_ROOT>` is already on the new default branch (content, mode and symlink target; CRLF-only differences ignored). It stops and names files it cannot prove, and exits non-zero (3 = a folder still left on disk). **It no longer folds the default branch into the user's branch** (`--fold` restores the old behaviour for a repo that merges rather than squashes); that is step 2's job.
+2. `bash <scripts>/pr-sync-branch.sh <pr-number> --dry-run`, read the commit list it prints (the commits that will leave the user's branch must all be ones the PR shipped), then run it without `--dry-run`. It refuses on a dirty tree, an unmerged PR, commits it cannot match, or a teammate's commit on `origin/<branch>`; on a rebase conflict it stops in progress and never picks a side.
+3. **Pushing the working branch.** `--push` does `git push --force-with-lease=<branch>:<old-origin-sha>`, a lease pinned to the exact remote tip the script saw. Use `--push` ONLY when the owner has said, in this conversation or in standing memory, that this branch may be force-pushed. Never the default branch, never a plain `--force`. If there is no such OK, stop after the local sync and say the one command that is left.
+
+A non-zero exit from any step is not done: read it, fix what is safe, or report it. Never add `--force` yourself, never reset by hand on unproven content, never auto-resolve a merge conflict.
+
+**If the user's branch holds work the PR did NOT ship** (the usual case when the PR was cut with `cherry-pick` onto the default branch, so only some of the branch's commits shipped), the `<pr-number>` match covers only the shipped subjects and the rest stays on top after the rebase: that is correct. If the branch has drifted far (hundreds of commits with different ids and the same content), do not hand-merge: build the target tree by merging the branch onto the default branch in a scratch worktree, run the tests there, and commit THAT tree on top of the default branch (see "Recovering a drifted working branch" in `github-pr-flow/references/MERGE-READINESS.md`).
 
 Without the script: `git fetch origin`, compare every dirty file against `origin/<default>` yourself, reset and merge only if all are proven duplicates, then `git worktree remove` and `git branch -d`.
 
@@ -64,4 +76,4 @@ Verify `git worktree list` and the parent folder no longer show the worktree; de
 
 ## Phase 7: Final report (short)
 
-State: `<REPO_ROOT>` untouched until Phase 5; PR number/URL; one line per shipped commit; merged or why not (with parked known issues, if any); Phase 5 outcome, exactly one of **Clean and in sync** / **Stopped on unique content** (name the files) / **Stopped on a merge conflict**; **Leftovers** (worktree, branch, temp folder: removed or exact path and why). List, but do not delete, any other sibling worktree whose branch is already merged.
+State: `<REPO_ROOT>` untouched until Phase 5; PR number/URL; one line per shipped commit; merged or why not (with parked known issues, if any); Phase 5 outcome, exactly one of **Clean and in sync** / **Stopped on unique content** (name the files) / **Stopped on a rebase conflict** / **Synced locally, push waiting for the owner's OK** (give the one command); **Leftovers** (worktree, branch, temp folder: removed or exact path and why). List, but do not delete, any other sibling worktree whose branch is already merged.

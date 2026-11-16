@@ -1,14 +1,22 @@
 #!/usr/bin/env bash
 # Post-merge cleanup for the worktree-per-PR workflow: remove the PR's
-# worktree, prune, delete its local branch, then bring the parent tree's
-# current branch up to date with the newly-merged main — never resetting
-# or checking out anything else in the parent tree beyond what's verified
-# below.
+# worktree, prune, delete its local branch, and prove the parent tree holds
+# nothing the PR did not ship -- never resetting or checking out anything
+# else in the parent tree beyond what's verified below.
 #
-#   tools/pr-review/pr-cleanup.sh ../myrepo-pr150 pr150-local
+#   tools/pr-review/pr-cleanup.sh ../myrepo-pr150 pr150-local [--fold]
 #
-# Run this from inside the PARENT tree (the checkout you want folded back
-# into), not from inside the worktree being removed.
+# Run this from inside the PARENT tree (the checkout of the user's branch),
+# not from inside the worktree being removed.
+#
+# IT NO LONGER MERGES THE DEFAULT BRANCH INTO THE PARENT'S BRANCH. A repo that
+# takes squash merges only turns every PR into one new commit with a new id,
+# so such a merge conflicts on every file both sides touched and leaves a merge
+# commit each time (a long-lived `develop` ended up 300 commits "ahead" of main
+# with identical content). Sync the branch with pr-sync-branch.sh instead: it
+# resets to the default branch, or rebases past the shipped commits. Pass
+# --fold only for a repo that merges (not squashes) and wants the old behaviour:
+# a fast-forward on the default branch, a plain `git merge` on any other.
 #
 # A dirty parent tree does NOT automatically stop this script. The
 # pr-to-main skill's Phase 1 copies the parent tree's pending changes into
@@ -25,8 +33,14 @@
 # pr-to-main skill's own Phase 5.
 set -euo pipefail
 
-worktree=${1:?usage: pr-cleanup.sh <worktree-path> <local-branch>}
-branch=${2:?usage: pr-cleanup.sh <worktree-path> <local-branch>}
+worktree=${1:?usage: pr-cleanup.sh <worktree-path> <local-branch> [--fold]}
+branch=${2:?usage: pr-cleanup.sh <worktree-path> <local-branch> [--fold]}
+fold=0
+case "${3:-}" in
+  "") ;;
+  --fold) fold=1 ;;
+  *) echo "unknown option: $3 (only --fold is accepted)" >&2; exit 2 ;;
+esac
 
 # Ignored files that are only rebuildable output: a package manager's or
 # build tool's cache and generated files. A worktree whose ONLY ignored files
@@ -290,10 +304,21 @@ current=$(git branch --show-current)
 # path-string collision check misses the file-vs-directory case entirely.
 # `--no-overwrite-ignore` makes git itself refuse (and leave the ignored
 # path untouched) instead of us trying to pre-detect every collision shape.
-if [ "$current" = "$default_branch" ]; then
+if [ "$fold" -eq 1 ]; then
+  if [ "$current" = "$default_branch" ]; then
+    git merge "$remote_ref" --ff-only --no-overwrite-ignore
+  else
+    git merge "$remote_ref" --no-edit --no-overwrite-ignore
+  fi
+elif [ "$current" = "$default_branch" ]; then
+  # On the default branch itself there is nothing to rewrite: a fast-forward is
+  # exactly "sync", and it can never conflict.
   git merge "$remote_ref" --ff-only --no-overwrite-ignore
 else
-  git merge "$remote_ref" --no-edit --no-overwrite-ignore
+  ahead=$(git rev-list --count "$remote_ref..$current")
+  behind=$(git rev-list --count "$current..$remote_ref")
+  echo "parent branch '$current' is $ahead ahead / $behind behind $remote_ref; NOT merged (squash-merge repos drift on merge)."
+  echo "next: bash $(dirname "${BASH_SOURCE[0]}")/pr-sync-branch.sh <pr-number> --dry-run"
 fi
 
 if [ "${left_behind:-0}" = "1" ]; then

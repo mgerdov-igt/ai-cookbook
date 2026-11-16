@@ -45,6 +45,7 @@ clean_poll() {
   return "$rc"
 }
 
+head_sha="$(gh pr view "$pr" --json headRefOid --jq .headRefOid)" || exit 1
 clean_poll; rc=$?
 [ "$rc" -eq 100 ] && exit 0
 [ "$rc" -eq 0 ] || exit "$rc"
@@ -62,9 +63,16 @@ clean_poll; rc=$?
 repo="$(gh repo view --json nameWithOwner --jq .nameWithOwner)" || exit 1
 method="$(gh api "repos/$repo" --jq 'if .allow_squash_merge then "--squash" elif .allow_merge_commit then "--merge" else "--rebase" end')" || exit 1
 
+# Pin the merge to the head the clean polls validated, so a later push is never merged (or bypassed).
+[ "$(gh pr view "$pr" --json headRefOid --jq .headRefOid)" = "$head_sha" ] || { echo "#$pr head moved during the clean polls; re-run"; exit 20; }
+
 last=""
 for attempt in 1 2; do
-  flags="$method --delete-branch"
+  decision="$(gh pr view "$pr" --json reviewDecision --jq '.reviewDecision // ""')" || exit 1
+  if [ "$decision" = "CHANGES_REQUESTED" ]; then
+    echo "#$pr reviewDecision=CHANGES_REQUESTED: a reviewer asked for changes; not merging"; exit 21
+  fi
+  flags="$method --delete-branch --match-head-commit $head_sha"
   if [ "$use_admin" -eq 1 ] && [ "$decision" = "REVIEW_REQUIRED" ]; then flags="$flags --admin"; fi
   echo "#$pr merge attempt $attempt: gh pr merge $flags"
   # shellcheck disable=SC2086

@@ -1,6 +1,6 @@
 ---
 name: pr-to-main
-description: Ship every pending change in the current repo as a PR to main, fully autonomously, in the background — without ever touching the current working folder or branch. Snapshots the current commits (and any uncommitted changes) into a separate worktree on its own branch, does all push/PR/merge-readiness/merge work there, and finally folds the merged main back into the current folder's current branch — so the user can keep committing on the same branch in the same folder the whole time. Invoke on "PR to main", "ship this", "open a PR and merge it", "land pending changes".
+description: Ship every pending change in the current repo as a PR to main, fully autonomously, in the background — without ever touching the current working folder or branch. Snapshots the current commits (and any uncommitted changes) into a separate worktree on its own branch, does all push/PR/merge-readiness/merge work there, and finally syncs the current folder's branch to the merged main (reset, or rebase past the shipped commits, never a merge) — so the user can keep committing on the same branch in the same folder the whole time. Invoke on "PR to main", "ship this", "open a PR and merge it", "land pending changes".
 disable-model-invocation: false
 ---
 

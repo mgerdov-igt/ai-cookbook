@@ -20,6 +20,8 @@ On the first cleanup pass in a repository, make no edits or deletions. Propose t
 - Do not infer that code is dead or a file disposable from its name, age, lack of imports, or Git ignore status. Search static and dynamic references and inspect ownership first.
 - Never discard user changes. Do not reset, stash, force-update, or run broad cleanup commands to make the tree look clean.
 - Treat ignored files as potentially valuable local data. Preview exact targets and preserve evidence, settings, and user-created files.
+- Stop and ask when a stop condition fires: a check you cannot run, a path whose owner you cannot name, a delete that would lose unpushed work, or a diff that grows past the confirmed scope. Record such conditions in the repo guide so the next pass starts with them.
+- Branches and worktrees from agentic work are cleaned by proof (merged PR, same head commit, no open PR, no unpushed work), never by `git branch --merged` alone: squash merges hide. See section 4A of the workflow.
 - Use the target repo's own platform, working-directory, formatting, analysis, test, and CI conventions. Do not copy commands from another project blindly.
 
 ## Finish

@@ -27,7 +27,8 @@ Run from inside the repo: `bash "<skill-folder>/scripts/<name>"`. On Windows use
 | `pr-reply.sh`, `pr-resolve.sh` | Reply (REST comment id) then resolve (GraphQL thread id). |
 | `pr-merge.sh <n> [--admin]` | Two clean polls, merge, verify MERGED. |
 | `pr-update-branch.sh <n>` or `--all` | Bring a BEHIND branch up to date (API, no checkout). |
-| `pr-cleanup.sh <worktree> <branch>` | After merge: remove the worktree, delete the branch, fold the default branch into the parent tree. Never discards a file it cannot prove is already merged. |
+| `pr-cleanup.sh <worktree> <branch> [--fold]` | After merge: remove the worktree, delete the branch, prove the parent tree's dirty files are already on the default branch. Does NOT merge the default branch into the parent's branch unless `--fold` (squash-only repos must use `pr-sync-branch.sh`). Never discards a file it cannot prove is already merged. |
+| `pr-sync-branch.sh <pr-number \| commit> [--branch B] [--dry-run] [--push]` | After a squash-merge: move the working branch (reset, or `rebase --onto` past the shipped commits) so it matches the default branch with no merge commit. `--push` = `--force-with-lease` pinned to the remote tip, only with the owner's OK. `test-pr-sync-branch.sh` is its self-test (39 checks). |
 | `pr-ready.sh <n>` | One-shot readiness check (not part of the normal flow). |
 
 Each script's header comment is its usage doc.

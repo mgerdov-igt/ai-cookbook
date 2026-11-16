@@ -64,6 +64,18 @@ Do not assume a cache can be removed independently: repository workspaces may ne
 
 Use commands appropriate to the current shell and operating system. If a command is destructive or shell-specific, explain the target and effect before running it; do not paste POSIX commands into PowerShell unchanged.
 
+## 4A. Clean What Agentic and Worktree-per-PR Work Leaves Behind
+
+Agents that work in one worktree per PR leave finished worktrees, local branches, temp folders, and backup branches. Treat these like any other cleanup target: prove first, then remove.
+
+- **Squash merges hide merged work.** `git branch --merged` does not list a squash-merged branch. The evidence that a branch is done is: its PR is MERGED, the PR head commit equals the local branch tip (no later local commits), and no other PR is open for it. A failed PR lookup counts as "open".
+- **A worktree is removable only when** it is not the main checkout, not the current one, not on the default branch, and has no uncommitted, untracked, or unpushed work. Ignored files count: keep the worktree if one is not rebuildable output.
+- **Never delete** a branch with local-only commits, a branch with an open PR, or a `backup/*` branch the owner has not released. Name them as KEEP with the reason.
+- **Dry run first.** The report is read-only; a separate flag applies it. Print each KEEP with its reason, not only the removals.
+- **Temp files** belong in the system temp folder. Remove only your own, by age, and say where anything kept lives.
+- **A long-lived working branch** (for example `develop`) that drifts after squash merges is MOVED, not merged: reset to the default branch when nothing newer sits on it, or `git rebase --onto <default> <last-shipped-commit> <branch>` when newer work does. A merge of the default branch back in conflicts on every shipped file and leaves a merge commit. If the repo has a sync script (for example `pr-sync-branch.sh` in the `github-pr-flow` skill), use it. Pushing the moved branch needs `--force-with-lease` pinned to the remote tip you saw, and only on a branch the owner has said may be force-pushed. Never on the default branch.
+- Remove a worktree with `git worktree remove` and its branch with `git branch -D` only after the checks above. If removal fails, report the folder instead of leaving it silently.
+
 ## 5. Verify and Report
 
 Discover the checks from project docs, package scripts, and CI. Respect required working directories and setup steps. Choose the smallest checks that cover the changed behavior, then run broader required gates for shared or high-risk changes. Typical checks may include formatting, static analysis, focused tests, integration tests, builds, and contract or snapshot tests; run only those that apply.
@@ -74,4 +86,5 @@ Before finishing:
 - Check Git status for unexpected deletions, untracked files, or remaining scratch output.
 - For disk cleanup, verify the targeted leftovers and required regenerated state.
 - State exactly which checks passed, failed, or could not run, with a brief reason.
+- Where the repo has a verification checklist or a "known invariants" list (facts a past cleanup broke), run through it item by item and say which item each check covers.
 - Summarize the changes, remaining risks, and deferred candidates. Do not claim full verification when a required check was blocked.

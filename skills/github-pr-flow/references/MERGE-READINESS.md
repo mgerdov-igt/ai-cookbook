@@ -77,4 +77,34 @@ An empty check list after a push is not green. A merge into the base leaves ever
 
 ## 6. Report
 
-PR link, checks run, thread status (and anything parked), merge result, known gaps. Clean up a PR worktree with `pr-cleanup.sh <worktree> <branch>` only after the merge; it never discards a file it cannot prove is already on the default branch.
+PR link, checks run, thread status (and anything parked), merge result, known gaps. Clean up a PR worktree with `pr-cleanup.sh <worktree> <branch>` only after the merge; it never discards a file it cannot prove is already on the default branch. Then sync the working branch with `pr-sync-branch.sh <pr-number>` (next section).
+
+## 7. After a squash merge: sync the working branch by MOVING it, not merging
+
+A repo that allows squash merges only (check: `gh api repos/:owner/:repo --jq .allow_merge_commit` is false) turns every PR into ONE new commit with a new id. Two things follow, and both bite a long-lived working branch such as `develop`:
+
+- The branch keeps the original commits, so git reports "N ahead, M behind" for content that is the same.
+- Review-round fixes land on the PR branch and the default branch only. The working branch still holds the pre-fix version.
+
+`git merge origin/<default>` into the working branch cannot tell the squash equals those commits. It conflicts on every file both sides touched, keeps both versions of anything it cannot reconcile, and adds a merge commit. Doing it ten times produced a branch 300 commits "ahead" with the same content.
+
+The cure is `bash scripts/pr-sync-branch.sh <pr-number>`:
+
+| The working branch has | The script does |
+|---|---|
+| nothing newer than the shipped commits | `reset --hard origin/<default>` |
+| newer commits on top of them | `rebase --onto origin/<default> <last shipped commit> <branch>`: the old copies drop out, main's version (review fixes included) is kept, only the newer commits remain |
+
+Always `--dry-run` first: it prints the commits that will leave the branch (they must all be ones the PR shipped) and the ones that stay. Pushing the rewritten branch needs `--force-with-lease` and the owner's OK (`--push`); the lease is pinned to the remote tip the script saw, so a teammate's push in between makes it refuse. Never the default branch.
+
+Keep the branch from drifting in the first place: ship small and oldest-first, do review fixes only on the PR branch, and keep other work off files that are in review.
+
+### Recovering a drifted working branch
+
+When the working branch is already far from the default branch (many commits, same content under different ids, plus some work that never shipped), do not hand-merge into it:
+
+1. `git worktree add --detach <tmp> origin/<default>`, then `git merge --no-commit --no-ff <working-branch>` there. A 3-way merge keeps the default branch's newer files and only adds what the working branch alone has. Read the conflict list: they are files both sides changed.
+2. Resolve each conflict on its merits. When a whole area has a newer design on the default branch (a rewritten page), take the default branch's version of that area and say so; never mix halves.
+3. Run the tests of every package the merge touched, in that scratch tree. A test that fails there and not on the default branch is the merge's doing: fix it in the scratch tree.
+4. Take the resulting TREE and commit it on top of `origin/<default>` as one or two real commits (`git commit-tree <tree> -p origin/<default>`). The working branch then equals the default branch plus exactly the unshipped work.
+5. Keep backup refs of the old local and remote tips (`git branch backup/<name>-before-sync <sha>`), then `git push --force-with-lease=<branch>:<old-remote-sha> origin <branch>` (owner's OK required).
