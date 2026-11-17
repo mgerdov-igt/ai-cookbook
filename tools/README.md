@@ -15,6 +15,7 @@ Setup, tool choices, commands, and fixes for each AI tool live here. Shared advi
 - [PowerShell environment setup](./powershell/SETUP.md)
 - [WSL2 on Windows](./wsl/OVERVIEW.md): setup, networking, and certificates
 - [Task-to-tool matrix](./TASK-TOOL-MATRIX.md)
+- [Model selection by task](./MODEL-SELECTION.md)
 - [PowerShell basics](./powershell/BASICS.md)
 - [PowerShell scripting rules](./powershell/SCRIPTING.md): safe, readable scripts for skills and automation
 - [PowerShell bootstrap](./powershell/BOOTSTRAP.md)

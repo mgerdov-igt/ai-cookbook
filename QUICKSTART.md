@@ -44,6 +44,7 @@ For a feature that needs clear requirements linked to tasks and tests, use the [
 
 Use these next:
 - [Task-to-tool matrix](tools/TASK-TOOL-MATRIX.md)
+- [Model selection by task](tools/MODEL-SELECTION.md)
 - [Fastest path by role](./FASTEST-PATH-BY-ROLE.md)
 - [10-minute onboarding](./10-MINUTE-ONBOARDING.md)
 - [Failure recovery](knowledge/FAILURE-RECOVERY.md)

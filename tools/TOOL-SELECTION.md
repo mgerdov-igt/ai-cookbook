@@ -103,5 +103,6 @@ Avoid modes that allow broad changes when:
 ## Related docs
 
 - [Task-to-tool matrix](./TASK-TOOL-MATRIX.md)
+- [Model selection by task](./MODEL-SELECTION.md)
 - [10-minute onboarding](../10-MINUTE-ONBOARDING.md)
 - [Common best practices](../knowledge/COMMON-BEST-PRACTICES.md)

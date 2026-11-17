@@ -25,6 +25,8 @@ Use this for common engineering tasks.
 
 ## Model tier quick guide
 
+For current model names in Claude Code and Copilot CLI, see [Model selection by task](./MODEL-SELECTION.md).
+
 - Start with a fast/default model for small edits, docs, and straightforward tests.
 - Start with a strong reasoning model for ambiguous bugs, architecture, and migrations.
 - Escalate model strength when the first pass misses constraints or gives shallow analysis.
