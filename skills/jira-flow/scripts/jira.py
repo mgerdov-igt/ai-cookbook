@@ -44,7 +44,7 @@ Write commands (print a plan and change NOTHING unless --yes is given):
                                             Markdown is converted unless --raw
     remotelink <KEY> --url URL --title T [--resolved]   idempotent (globalId = URL)
     transition <KEY...> --to "<transition name|id>" [--allow-never]
-    walk <KEY...> [--to "<status>" | --event started|plan_approved|fixed|pr_opened|merged] [--fields-file F.json]
+    walk <KEY...> [--to "<status>" | --level ready|done | --event started|plan_approved|fixed|pr_opened|merged] [--fields-file F.json]
                                             forward along the profile's path; fills screen
                                             fields from F.json ({"Field name": value}); stops
                                             on a missing required field; `--allow-never` may
@@ -359,6 +359,12 @@ class Tool:
         pname, prof = self.profile(iss["issuetype"]["name"])
         path = prof.get("path") or die("%s: profile %r has no `path` in .jira-flow.json." % (k, pname))
         event = self.f.get("event")
+        level = self.f.get("level")
+        if level:  # two levels of done: ready = dev done, ready for QA; done = the real Done (final, one-way)
+            levels = prof.get("levels") or {}
+            if level not in levels:
+                die("--level %r: profile %r has no such level (config `levels`: %s)." % (level, pname, ", ".join(sorted(levels)) or "none"))
+            self.f["to"] = levels[level]
         target = self.f.get("to") or (prof.get("status") or {}).get(event or "merged")
         if not target:
             print("%s: profile %r maps no status to event %r; nothing to do" % (k, pname, event or "merged"))
