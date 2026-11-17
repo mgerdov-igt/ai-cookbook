@@ -34,7 +34,8 @@ If attachment downloads come back as a login page (SSO or 2FA plugins block toke
 | Who am I, which config | `whoami` |
 | Everything about one issue, cached | `digest KEY [--window HH:MM-HH:MM]` |
 | My open work | `mine [--project P] [--pi V] [--type T] [--status S] [--text W] [--jql J] [--max N]`: loose names allowed ("Terminal App", "PI 3"); it prints what they matched |
-| Move forward along the workflow | `walk KEY --event started\|plan_approved\|fixed\|pr_opened\|merged` or `--to "<status>"`; screen fields from `--fields-file f.json` |
+| Move forward along the workflow | `walk KEY --event started\|plan_approved\|fixed\|pr_opened\|merged` or `--to "<status>"` or `--level ready` or `--level done` (config `levels`; `done` is one-way and still needs `--allow-never`); screen fields from `--fields-file f.json` |
+| Move issues between sprints | `sprint KEY... --to "<sprint name>"\|<id>\|backlog [--board ID]` (dry run unless `--yes`) |
 | Explicitly authorized terminal exception | `walk KEY --to "Done" --allow-never [--allow-write] [--yes]` |
 | See what a transition requires | `transitions KEY --fields` (`*` = required) |
 | One edited-in-place bot comment | `upsert-comment KEY --marker questions\|plan\|status --title T --file f.md` |

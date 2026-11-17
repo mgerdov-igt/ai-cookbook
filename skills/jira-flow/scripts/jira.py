@@ -53,6 +53,7 @@ Write commands (print a plan and change NOTHING unless --yes is given):
     --allow-write                            override config read_only for this invocation;
                                              JIRA_FLOW_READ_ONLY=1 remains a hard lock
     set <KEY...> --field <id|name> --value V
+    sprint <KEY...> --to "<sprint name>"|<sprint id>|backlog [--board ID]   move issues between sprints (Jira Agile API; --board lists empty sprints too; dry run unless --yes)
     bulk --jql "<jql>" --do assign|comment|transition|walk|set [that command's flags]
 
 Safety: every write skips an issue assigned to someone else and prints SKIP. Pass
@@ -182,6 +183,17 @@ class Jira:
         data = json.dumps(body).encode() if body is not None else None
         try:
             with self._open(API + path, method, data) as r:
+                text = r.read().decode("utf-8", "replace")
+        except urllib.error.HTTPError as e:
+            die("%s %s -> HTTP %s %s" % (method, path, e.code, e.read().decode("utf-8", "replace")[:400]))
+        except urllib.error.URLError as e:
+            die("%s %s -> %s" % (method, path, e.reason))
+        return json.loads(text) if text else None
+
+    def agile(self, method, path, body=None):
+        data = json.dumps(body).encode() if body is not None else None
+        try:
+            with self._open(BASE + "/rest/agile/1.0" + path, method, data) as r:
                 text = r.read().decode("utf-8", "replace")
         except urllib.error.HTTPError as e:
             die("%s %s -> HTTP %s %s" % (method, path, e.code, e.read().decode("utf-8", "replace")[:400]))
@@ -447,7 +459,47 @@ class Tool:
         if self.yes:
             self.j.call("PUT", "/issue/" + k, {"fields": {fid: val}})
 
-    ACTIONS = ("assign", "comment", "transition", "walk", "set")
+    ACTIONS = ("assign", "comment", "transition", "walk", "set", "sprint")
+
+    def sprint_ids(self):
+        """{sprint name: id} for every sprint seen on VTA issues (Jira Agile API, read via the issue field)."""
+        if getattr(self, "_sprints", None) is None:
+            sf = self.j.fid("Sprint")
+            issues, _ = self.j.search("project = %s AND sprint is not EMPTY" % (self.f.get("project") or "VTA"), sf)
+            out = {}
+            for i in issues:
+                for s in i["fields"].get(sf) or []:
+                    m = re.search(r"id=(\d+).*?name=([^,\]]+)", str(s))
+                    if m:
+                        out[m.group(2).strip()] = int(m.group(1))
+            if self.f.get("board"):  # empty sprints have no issues to read an id from: list them from the board
+                start = 0
+                while True:
+                    page = self.j.agile("GET", "/board/%d/sprint?startAt=%d&maxResults=50" % (int(self.f["board"]), start)) or {}
+                    for s in page.get("values", []):
+                        out.setdefault(s["name"], s["id"])
+                    if page.get("isLast", True) or not page.get("values"):
+                        break
+                    start += len(page["values"])
+            self._sprints = out
+        return self._sprints
+
+    def do_sprint(self, k):
+        """sprint KEY... --to "<sprint name>" | --to backlog"""
+        if not self.may_write(k):
+            return
+        to = self.f.get("to") or die('--to "<sprint name>" or --to backlog is required.')
+        if to.lower() == "backlog":
+            self.plan("%s: move to backlog (no sprint)" % k)
+            if self.yes:
+                self.j.agile("POST", "/backlog/issue", {"issues": [k]})
+            return
+        ids = self.sprint_ids()
+        sid = int(to) if to.isdigit() else ids.get(to)  # an explicit sprint id also works (empty sprints)
+        sid = sid or die("unknown sprint %r; known: %s (an empty sprint: pass its id or --board <id>)" % (to, ", ".join(sorted(ids))))
+        self.plan("%s: move to sprint %s (id %s)" % (k, to, sid))
+        if self.yes:
+            self.j.agile("POST", "/sprint/%d/issue" % sid, {"issues": [k]})
 
     def cmd_upsert_comment(self):
         k = self.pos[0] if self.pos else die("Give an issue key.")
