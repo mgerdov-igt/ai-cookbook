@@ -1,6 +1,6 @@
 # Prompt Templates
 
-Use these as starting points. Keep them short.
+Use these as starting points. Keep them short. To write your own, see [Prompt engineering](./PROMPT-ENGINEERING.md).
 
 ## Bug investigation
 
@@ -37,7 +37,7 @@ Done when: The diff is reviewable, behavior is preserved, and verification steps
 Goal: Add tests for <module or behavior>
 Context: <test framework, current gaps, target files>
 Do not: Rewrite production code unless required for testability
-Done when: New tests fail before the fix or cover the intended behavior and pass locally
+Done when: New tests cover the intended behavior and pass locally
 ```
 
 ## Incident review

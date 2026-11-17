@@ -33,7 +33,7 @@ Why this helps:
 
 ## Prompt pattern that works
 
-Use this template:
+Say the goal, context, limits, and how to check the result. See [Prompt engineering](./PROMPT-ENGINEERING.md) for the pattern, examples, and advanced tips, and [Prompt templates](./PROMPT-TEMPLATES.md) for copy-paste prompts.
 
 ```text
 Goal: <what to achieve>

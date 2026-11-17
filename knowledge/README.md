@@ -6,6 +6,7 @@ Advice and work methods that apply to more than one AI tool live here.
 
 - [Common best practices](./COMMON-BEST-PRACTICES.md)
 - [Failure recovery](./FAILURE-RECOVERY.md)
+- [Prompt engineering](./PROMPT-ENGINEERING.md)
 - [Prompt templates](./PROMPT-TEMPLATES.md)
 - [Session management](./SESSION-MANAGEMENT.md)
 - [Writing a portable skill](./WRITING-SKILLS.md)

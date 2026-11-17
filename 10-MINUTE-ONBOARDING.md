@@ -68,7 +68,7 @@ Pick one:
 - [Copilot CLI examples](tools/copilot-cli/EXAMPLES.md)
 - [Claude Code examples](tools/claude-code/EXAMPLES.md)
 
-## 6) Verify the result
+Write the prompt with [Prompt engineering](knowledge/PROMPT-ENGINEERING.md): goal, context, limits, and a check. Verify the result
 
 Before you trust the output:
 - Check the changed files yourself

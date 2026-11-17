@@ -17,7 +17,7 @@ Fastest path:
    - [Copilot CLI setup](tools/copilot-cli/SETUP.md)
    - [Claude Code setup](tools/claude-code/SETUP.md)
 4. Use [Task-to-tool matrix](tools/TASK-TOOL-MATRIX.md) for the exact task type
-5. Start with a prompt from [Prompt templates](knowledge/PROMPT-TEMPLATES.md)
+5. Start with a prompt from [Prompt templates](knowledge/PROMPT-TEMPLATES.md), and see [Prompt engineering](knowledge/PROMPT-ENGINEERING.md) to write your own
 
 Good starting tasks:
 - Small bug fix
