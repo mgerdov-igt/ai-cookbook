@@ -1,5 +1,7 @@
 # GitHub Copilot CLI Setup (Windows 11 + PowerShell 7)
 
+Install commands last verified: 2026-11-17.
+
 This section uses the current Copilot CLI (`copilot` command).
 
 ## Prerequisites

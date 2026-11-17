@@ -1,5 +1,7 @@
 # Claude Code Setup (Windows 11 + PowerShell 7)
 
+Install commands last verified: 2026-11-17.
+
 ## Prerequisites
 
 - [Prerequisite tools](../PREREQUISITES-TOOLS.md)
