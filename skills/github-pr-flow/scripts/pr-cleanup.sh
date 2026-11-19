@@ -228,21 +228,38 @@ if [ ${#dirty_files[@]} -gt 0 ]; then
   # Ignored files are not in dirty_files; a reset --hard would overwrite one
   # if the remote now tracks the same path, a directory over it, or a file at
   # one of its parent directories.
-  while IFS= read -r -d '' ig; do
-    hit=0
-    # exact path or incoming descendants (path-limited ls-tree matches on
-    # directory boundaries only)
-    [ -n "$(git ls-tree -r --name-only "$remote_ref" -- "${ig%/}")" ] && hit=1
-    anc="$ig"
-    while [ "$hit" -eq 0 ]; do
-      anc=$(dirname "$anc")
-      { [ "$anc" = "." ] || [ "$anc" = "/" ]; } && break
-      [ "$(git cat-file -t "${remote_ref}:${anc}" 2>/dev/null)" = "blob" ] && hit=1
-    done
-    if [ "$hit" -eq 1 ]; then
+  # One awk pass over both lists, never git per ignored file: a Flutter
+  # checkout has tens of thousands of ignored build files, and spawning several
+  # git processes for each one (as this used to) hung for the better part of an
+  # hour on Windows. A collision is the exact path, a tracked file at one of its
+  # parent directories, or an incoming directory at the path (a tracked
+  # descendant).
+  tree_file=$(mktemp) || { echo "STOP: cannot create a temp file" >&2; exit 1; }
+  ign_file=$(mktemp) || { rm -f "$tree_file"; echo "STOP: cannot create a temp file" >&2; exit 1; }
+  if ! git ls-tree -r -z --name-only "$remote_ref" > "$tree_file" \
+     || ! git ls-files -z --others --ignored --exclude-standard > "$ign_file"; then
+    rm -f "$tree_file" "$ign_file"
+    echo "STOP: could not list files to check ignored-file collisions; not resetting." >&2; exit 1
+  fi
+  collisions=$(LC_ALL=C awk 'BEGIN { RS = "\0"; ORS = "\0" }
+    NR == FNR {
+      files[$0] = 1
+      p = $0
+      while ((i = match(p, /\/[^\/]*$/)) > 0) { p = substr(p, 1, i - 1); dirs[p] = 1 }
+      next
+    }
+    {
+      ig = $0; sub(/\/$/, "", ig); hit = (ig in files) || (ig in dirs)
+      p = ig
+      while (!hit && (i = match(p, /\/[^\/]*$/)) > 0) { p = substr(p, 1, i - 1); if (p in files) hit = 1 }
+      if (hit) print $0
+    }' "$tree_file" "$ign_file" | tr '\0' '\n')
+  rm -f "$tree_file" "$ign_file"
+  if [ -n "$collisions" ]; then
+    while IFS= read -r ig; do
       unique="${unique}  IGNORED file collides with a path on ${remote_ref}: ${ig}\n"
-    fi
-  done < <(git ls-files -z --others --ignored --exclude-standard)
+    done <<< "$collisions"
+  fi
   for f in "${dirty_files[@]}"; do
     if ! git cat-file -e "${remote_ref}:${f}" 2>/dev/null; then
       unique="${unique}  NEW (not on ${remote_ref} at all): ${f}\n"
