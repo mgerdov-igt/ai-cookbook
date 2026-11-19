@@ -24,7 +24,7 @@ Go straight to setup:
 
 ## 3) If you are setting up a machine
 
-Shortcut: [TauShell](https://github.com/ma99us/tau-shell) installs PowerShell 7 and the AI tools for you, resumes sessions, and loads this cookbook's skills and prompts. See [TauShell setup](tools/tau-shell/SETUP.md).
+Shortcut: [TauShell](https://github.com/ma99us/tau-shell) installs PowerShell 7 and the AI tools for you, resumes sessions, and loads this cookbook's skills and prompts. See [TauShell setup](tools/tau-shell/SETUP.md) and the TauShell [Getting Started guide](https://github.com/ma99us/tau-shell/blob/main/GETTING-STARTED.md).
 
 Or set up by hand. Follow [Prerequisite tools](tools/PREREQUISITES-TOOLS.md).
 

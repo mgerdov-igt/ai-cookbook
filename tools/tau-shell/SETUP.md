@@ -2,6 +2,8 @@
 
 [TauShell](https://github.com/ma99us/tau-shell) is a Windows desktop app that runs AI coding tools in persistent PowerShell 7 sessions. Use it instead of installing and wiring each tool by hand. It installs missing tools after you confirm, resumes conversations, and loads the skills and prompts from this cookbook ([ai-cookbook](https://github.com/mgerdov-igt/ai-cookbook)) automatically.
 
+New to TauShell? Read its [Getting Started guide](https://github.com/ma99us/tau-shell/blob/main/GETTING-STARTED.md) first; this page covers the cookbook side.
+
 TauShell is optional. The manual guides in [tools/](../README.md) still work.
 
 ## What It Replaces
