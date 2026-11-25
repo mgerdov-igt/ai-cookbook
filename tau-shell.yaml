@@ -18,6 +18,7 @@ skills:
   - plain-language
   - docs-sync-audit
   - git-commit
+  - plan-only
 # presets: prompt presets shown in TauShell; same fields as TauShell presets.yaml.
 # `skill` hides a preset unless that skill is available to the session.
 # Text stays on one line because a newline would submit the prompt early.
@@ -50,6 +51,10 @@ presets:
   - name: Commit changes
     text: Use the git-commit skill to commit my changes with a conventional message
     skill: git-commit
+    submit: false
+  - name: Plan only
+    text: "Use the plan-only skill to plan: <topic>"
+    skill: plan-only
     submit: false
   - name: Template - Bug investigation
     text: "Goal: Find the root cause of <bug>. Context: <relevant files, logs, recent changes>. Do not: Change unrelated files or guess without evidence. Done when: You can explain the cause and propose the smallest safe fix"
