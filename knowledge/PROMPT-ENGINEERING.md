@@ -101,3 +101,4 @@ Before you press Enter:
 - [Session management](./SESSION-MANAGEMENT.md)
 - [Model selection by task](../tools/MODEL-SELECTION.md)
 - [Plain-language skill](../skills/plain-language/SKILL.md) for rewriting a dense reply
+- [Plan-only skill](../skills/plan-only/SKILL.md) for planning without code changes
