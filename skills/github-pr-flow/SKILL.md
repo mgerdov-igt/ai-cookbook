@@ -35,7 +35,7 @@ Each script's header comment is its usage doc.
 
 ## Efficiency rules (each saves a CI cycle or many tokens)
 
-1. Request the review bot the moment the PR opens; self-review the diff before the first push.
+1. Request the review bot the moment the PR opens; self-review the diff before the first push (the [pre-push](../pre-push/SKILL.md) skill does this and runs the checks).
 2. Do not wait for CI: findings land mid-run. `pr-watch.sh --loop` handles it.
 3. Fix every open thread, then push once per round. Cancel superseded CI first; CI restarts by itself.
 4. The 4th bot review is parked, not fixed (`PR_ROUND_LIMIT`, default 4).
