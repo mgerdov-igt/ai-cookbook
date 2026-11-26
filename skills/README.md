@@ -140,6 +140,7 @@ Before running any skill, verify:
 | [docs-sync-audit](./docs-sync-audit/SKILL.md) | Any repository; link check needs PowerShell 7 | Repository docs and source, `pwsh` | Read-only docs drift report with P0-P3 findings and a link and anchor check |
 | [git-commit](./git-commit/SKILL.md) | Any git repository | Git | Related changes staged and committed with a Conventional Commits message; no push |
 | [plan-only](./plan-only/SKILL.md) | Any AI tool and OS | None | Planning with no code changes: one question at a time, research, and an updated plan document |
+| [pre-push](./pre-push/SKILL.md) | Any git repository | Git, Python 3.8+, the repo's own build and test tools | Branch scanned for secrets and leftovers, diff self-reviewed, CI-equivalent tests run, unexpected failures compared with the default branch, fresh-build smoke test, and a ready-or-not report; no commit or push |
 
 ## Quick decision table
 
@@ -160,6 +161,7 @@ Before running any skill, verify:
 | Check docs against code, commands, and links | [docs-sync-audit](./docs-sync-audit/SKILL.md) | "Are the docs stale after this change?" | `repository-governance`, which decides what to keep or merge, not whether claims are true |
 | Commit changes | [git-commit](./git-commit/SKILL.md) | "Commit this with a conventional message" | `git add -A` over unrelated changes, or pushing without being asked |
 | Plan a change without coding yet | [plan-only](./plan-only/SKILL.md) | "plan only: add retry handling to the sync job" | Asking for a plan without the rules, then finding code was changed |
+| Check work before you push or open a PR | [pre-push](./pre-push/SKILL.md) | "Check this before I push" | Pushing first and finding the secret, the broken test or the stale build in review |
 | Browser page screenshot | Browser screenshot tool | "Screenshot this web page in the browser" | Do not use `windows-screenshot` for browser pages |
 
 ## Reusable skill template
